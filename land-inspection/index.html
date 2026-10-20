@@ -12,7 +12,7 @@ th:nth-child(1){width:10%}th:nth-child(2){width:6%}th:nth-child(3){width:7%}th:n
 #home table{min-width:0}#home td{padding:8px}#home td button{margin-right:7px}
 .print-sheet{display:none}
 @media(max-width:640px){.project-fields{grid-template-columns:1fr}header>div{padding:9px}main{padding:10px}h1{font-size:19px}}
-@page{size:A4 landscape;margin:11mm 9mm 10mm}
+@page{size:A4 portrait;margin:12mm 9mm 12mm 22mm}
 @media print{
 header,main,.toolbar,.no-print{display:none!important}body{background:white;color:black}.print-sheet{display:block;font-family:"Yu Gothic","Meiryo",sans-serif;font-size:10.5pt}
 .print-sheet h1{text-align:center;font-size:18pt;letter-spacing:.25em;margin:0 0 7mm}
@@ -21,9 +21,9 @@ header,main,.toolbar,.no-print{display:none!important}body{background:white;colo
 .print-info b{display:inline-block;min-width:25mm}
 .print-sheet h2{font-size:12pt;margin:4mm 0 1.5mm}
 .print-sheet table{width:100%;min-width:0;table-layout:fixed;border-collapse:collapse}
-.print-sheet th,.print-sheet td{border:1px solid #000;font-size:9pt;padding:1.2mm 1.4mm;height:8mm;overflow-wrap:anywhere}
+.print-sheet th,.print-sheet td{border:1px solid #000;font-size:7pt;padding:1.2mm .7mm;height:8mm;overflow-wrap:anywhere}
 .print-sheet th{background:#eee}
-.print-sheet th:nth-child(1){width:11%}.print-sheet th:nth-child(2){width:7%}.print-sheet th:nth-child(3){width:7%}.print-sheet th:nth-child(4){width:22%}.print-sheet th:nth-child(5){width:18%}.print-sheet th:nth-child(6){width:5%}.print-sheet th:nth-child(7){width:24%}.print-sheet th:nth-child(8){width:6%}
+.print-sheet th:nth-child(1){width:11%}.print-sheet th:nth-child(2){width:7%}.print-sheet th:nth-child(3){width:8%}.print-sheet th:nth-child(4){width:20%}.print-sheet th:nth-child(5){width:18%}.print-sheet th:nth-child(6){width:6%}.print-sheet th:nth-child(7){width:23%}.print-sheet th:nth-child(8){width:7%}
 .print-sheet section{break-inside:avoid}.print-sheet tr{break-inside:avoid}
 }
 </style></head><body>
