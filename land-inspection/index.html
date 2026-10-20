@@ -1,73 +1,73 @@
 <!doctype html>
-<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>土地閲覧調書（端末内処理）</title>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>土地閲覧調書ツール</title>
 <style>
-*{box-sizing:border-box}body{font-family:system-ui,"Yu Gothic",sans-serif;margin:0;color:#202020;background:#f2f4f6}
-main{max-width:1200px;margin:auto;padding:16px}h1{text-align:center;letter-spacing:.2em;font-size:25px;margin:20px 0 28px}
-.toolbar{background:white;border:1px solid #d5d8dd;border-radius:10px;padding:13px;margin-bottom:18px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-button{border:0;background:#1766a7;color:white;border-radius:7px;padding:10px 14px;font:inherit;cursor:pointer}
-button.secondary{background:#555}.note{color:#555;font-size:12px;margin:0}.metadata{display:grid;grid-template-columns:1fr 1fr;gap:9px 40px;margin-bottom:20px}
-.field{display:flex;align-items:center;border-bottom:1px solid #333;gap:10px;min-height:34px}.field b{min-width:100px;font-size:13px}
-input,select,textarea{font:inherit;border:1px solid #c9d0d7;padding:6px;border-radius:4px;min-width:0;background:white;color:inherit}
-.field input{border:0;flex:1;width:100%;background:transparent}
-h2{font-size:16px;margin:22px 0 9px}section{margin-bottom:13px}
-.scroll{overflow-x:auto}table{width:100%;border-collapse:collapse;table-layout:fixed;background:white}
-th,td{border:1px solid #333;padding:0;text-align:left;font-size:13px}th{text-align:center;height:30px;background:#f4f4f4;white-space:nowrap}
-td input{border:0;border-radius:0;width:100%;padding:7px 5px;min-height:36px}
-td input:focus{outline:2px solid #2677ad;outline-offset:-2px}
-th:nth-child(1){width:11%}th:nth-child(2){width:7%}th:nth-child(3){width:7%}th:nth-child(4){width:22%}th:nth-child(5){width:18%}th:nth-child(6){width:5%}th:nth-child(7){width:24%}th:nth-child(8){width:6%}
-.section-actions{display:flex;gap:8px;margin-top:9px;flex-wrap:wrap}.section-actions button{font-size:12px;padding:7px 10px}
-@page{size:A4 landscape;margin:12mm 10mm 12mm 10mm}
+*{box-sizing:border-box}body{font-family:system-ui,"Yu Gothic","Meiryo",sans-serif;margin:0;background:#f3f5f7;color:#20252a}main{max-width:1360px;margin:auto;padding:16px}
+h1{font-size:23px;margin:7px 0}h2{font-size:17px;margin:0}button,input,select{font:inherit}button{border:0;border-radius:6px;background:#1967a4;color:white;padding:8px 12px;cursor:pointer}button.secondary{background:#576577}button.danger{background:#a43c3c}
+header{background:white;border-bottom:1px solid #ccd2d8;position:sticky;top:0;z-index:3}header>div{max-width:1360px;margin:auto;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+.controls{display:flex;gap:7px;flex-wrap:wrap;align-items:center}.muted{color:#5c6670;font-size:12px}.panel{background:#fff;border:1px solid #d8dee3;border-radius:9px;padding:15px;margin:14px 0}
+.project-fields{display:grid;grid-template-columns:1fr 1fr;gap:12px}.project-fields label{font-size:13px;font-weight:600;display:flex;flex-direction:column;gap:5px}.project-fields input{padding:9px;border:1px solid #ccd2d8;border-radius:5px;min-width:0}
+.section-head{display:flex;align-items:center;justify-content:space-between;gap:7px;margin-bottom:10px}.scroll{overflow-x:auto}table{width:100%;min-width:950px;border-collapse:collapse;table-layout:fixed}th,td{border:1px solid #c4cbd3;padding:2px}th{font-size:12px;background:#edf1f5;padding:7px 2px}td input,td select{border:0;background:transparent;width:100%;min-width:0;padding:8px 3px;font-size:13px}td button{padding:5px 7px;margin:1px;font-size:12px}
+th:nth-child(1){width:10%}th:nth-child(2){width:6%}th:nth-child(3){width:7%}th:nth-child(4){width:19%}th:nth-child(5){width:16%}th:nth-child(6){width:6%}th:nth-child(7){width:20%}th:nth-child(8){width:6%}th:nth-child(9){width:10%}
+#home table{min-width:0}#home td{padding:8px}#home td button{margin-right:7px}
+.print-sheet{display:none}
+@media(max-width:640px){.project-fields{grid-template-columns:1fr}header>div{padding:9px}main{padding:10px}h1{font-size:19px}}
+@page{size:A4 landscape;margin:11mm 9mm 10mm}
 @media print{
-body{background:white}main{max-width:none;padding:0}h1{font-size:18px;margin:7mm 0 7mm}
-.toolbar,.section-actions,.note{display:none!important}
-.metadata{gap:5px 15mm;margin-bottom:7mm}.field{min-height:9mm}.field input{font-size:11px}
-h2{font-size:13px;margin:6mm 0 3mm}
-th,td{font-size:10px;overflow-wrap:anywhere}th{height:8mm;background:white}
-td input{padding:2mm 1mm;min-height:8mm;font-size:10px;white-space:normal}
-input{appearance:none!important;-webkit-appearance:none!important;box-shadow:none!important}
-section{break-inside:avoid}thead{display:table-header-group}tr{break-inside:avoid}
+header,main,.toolbar,.no-print{display:none!important}body{background:white;color:black}.print-sheet{display:block;font-family:"Yu Gothic","Meiryo",sans-serif;font-size:10.5pt}
+.print-sheet h1{text-align:center;font-size:18pt;letter-spacing:.25em;margin:0 0 7mm}
+.print-info{display:grid;grid-template-columns:1fr 1fr;gap:2mm 12mm;margin-bottom:5mm}
+.print-info div{border-bottom:1px solid #000;min-height:7mm;padding:1mm 2mm}
+.print-info b{display:inline-block;min-width:25mm}
+.print-sheet h2{font-size:12pt;margin:4mm 0 1.5mm}
+.print-sheet table{width:100%;min-width:0;table-layout:fixed;border-collapse:collapse}
+.print-sheet th,.print-sheet td{border:1px solid #000;font-size:9pt;padding:1.2mm 1.4mm;height:8mm;overflow-wrap:anywhere}
+.print-sheet th{background:#eee}
+.print-sheet th:nth-child(1){width:11%}.print-sheet th:nth-child(2){width:7%}.print-sheet th:nth-child(3){width:7%}.print-sheet th:nth-child(4){width:22%}.print-sheet th:nth-child(5){width:18%}.print-sheet th:nth-child(6){width:5%}.print-sheet th:nth-child(7){width:24%}.print-sheet th:nth-child(8){width:6%}
+.print-sheet section{break-inside:avoid}.print-sheet tr{break-inside:avoid}
 }
-@media(max-width:600px){main{padding:10px}h1{font-size:21px}.metadata{grid-template-columns:1fr;gap:8px}.scroll table{min-width:920px}}
-</style></head><body><main>
-<div class="toolbar"><button id="print" type="button">PDF出力（印刷）</button><button id="clear" class="secondary" type="button">全項目を消去</button><p class="note">データはGitHubやサーバーに送信・保存しません。端末のブラウザ内でのみ処理し、再読み込みで消えます。PDF出力は印刷画面で「PDFに保存」を選択してください。</p></div>
-<h1>土地閲覧調書</h1>
-<div class="metadata">
-<label class="field"><b>業務名</b><input aria-label="業務名" autocomplete="off"></label>
-<label class="field"><b>所在</b><input aria-label="所在" autocomplete="off"></label>
-<label class="field"><b>調査年月日</b><input aria-label="調査年月日" type="date" autocomplete="off"></label>
-<label class="field"><b>調査者</b><input aria-label="調査者" autocomplete="off"></label>
-</div>
-<div id="sections"></div>
-</main><script>
+</style></head><body>
+<header><div><div><h1>土地閲覧調書ツール</h1><div class="muted">端末内保存版（GitHubへの入力データ送信なし）</div></div>
+<div class="controls"><button class="secondary" id="back">案件一覧</button><button id="save">保存</button><button id="print">印刷・PDF</button><span id="status" class="muted"></span></div></div></header>
+<main>
+<div id="home"><div class="panel"><h2>案件一覧</h2><p class="muted">案件はこのブラウザ内に保存します。別の端末やブラウザには共有されません。GitHubへのアップロードはありません。ブラウザのデータを消去すると案件も消えるため、必要な成果はPDFで保存してください。</p>
+<p><button id="new">＋ 新規案件</button></p><div class="scroll"><table><thead><tr><th>業務名</th><th>所在</th><th>調査年月日</th><th>操作</th></tr></thead><tbody id="projects"></tbody></table></div></div></div>
+<div id="editor" hidden>
+<div class="panel project-fields">
+<label>業務名<input id="job_name" autocomplete="off"></label><label>所在<input id="location" autocomplete="off"></label>
+<label>調査年月日<input id="survey_date" type="date"></label><label>調査者<input id="surveyor" autocomplete="off"></label>
+</div><div id="sections"></div></div>
+</main><div class="print-sheet" id="printSheet"></div>
+<script>
 "use strict";
-// No localStorage, cookies, IndexedDB, fetch, analytics or network upload.
-const kinds=[["target","業務対象地"],["adjacent","隣接地"],["public","里道・水路・対面地等"]];
-const fields=["地番","地目","地積","登記名義人住所","登記名義人氏名","乙区","備考","筆数"];
-const counts={target:1,adjacent:2,public:1};
-const escapeHtml=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-function newRow(kind){
-const tr=document.createElement("tr");
-fields.forEach((field,i)=>{const td=document.createElement("td");const input=document.createElement("input");input.type="text";input.setAttribute("aria-label",kind+" "+field);input.autocomplete="off";if(i===2)input.inputMode="decimal";if(i===7)input.inputMode="numeric";td.appendChild(input);tr.appendChild(td);});return tr;
-}
-function addRow(kind){document.querySelector("#"+kind+" tbody").appendChild(newRow(kind));}
-function removeRow(kind){const body=document.querySelector("#"+kind+" tbody");if(body.rows.length>1)body.deleteRow(-1);else body.querySelectorAll("input").forEach(x=>x.value="");}
-function render(){
-const root=document.getElementById("sections");
-kinds.forEach(([kind,title])=>{
-const sec=document.createElement("section");sec.id=kind;
-sec.innerHTML='<h2>'+escapeHtml(title)+'</h2><div class="scroll"><table><thead><tr>'+fields.map(f=>'<th>'+f+'</th>').join("")+'</tr></thead><tbody></tbody></table></div><div class="section-actions"><button type="button" data-action="add">＋ 行を追加</button><button type="button" data-action="remove" class="secondary">－ 最終行を削除</button></div>';
-root.appendChild(sec);
-for(let i=0;i<counts[kind];i++)addRow(kind);
-sec.querySelector('[data-action="add"]').addEventListener("click",()=>addRow(kind));
-sec.querySelector('[data-action="remove"]').addEventListener("click",()=>removeRow(kind));
-});
-}
-render();
-document.getElementById("print").addEventListener("click",()=>window.print());
-document.getElementById("clear").addEventListener("click",()=>{
-if(!confirm("入力した内容をすべて消去しますか？"))return;
-document.querySelectorAll("input").forEach(e=>e.value="");
-kinds.forEach(([kind])=>{const body=document.querySelector("#"+kind+" tbody");body.replaceChildren();for(let i=0;i<counts[kind];i++)addRow(kind);});
-});
+// Browser-only: no fetch, API, analytics, cookies, or GitHub write operations.
+const KEY="land-inspection-projects-v2";
+const cats=[["target","業務対象地"],["adjacent","隣接地"],["road_water","里道・水路・対面地等"]];
+const fields=[["parcel_number","地番"],["land_category","地目"],["area","地積"],["owner_address","登記名義人住所"],["owner_name","登記名義人氏名"],["section_b","乙区"],["remarks","備考"],["survey_count","筆数"]];
+const el=id=>document.getElementById(id);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+let db=[],active=null;
+try{const item=localStorage.getItem(KEY);if(item){const parsed=JSON.parse(item);if(Array.isArray(parsed))db=parsed}}catch(e){alert("保存データを読み込めませんでした。ブラウザの保存設定を確認してください。")}
+function persist(){try{localStorage.setItem(KEY,JSON.stringify(db));return true}catch(e){alert("端末内への保存に失敗しました。保存容量またはブラウザ設定を確認してください。");return false}}
+function blank(){return {id:String(Date.now())+"-"+Math.random().toString(36).slice(2),project:{job_name:"",location:"",survey_date:new Date().toLocaleDateString("sv-SE"),surveyor:""},parcels:Object.fromEntries(cats.map(([k])=>[k,[{}]]))}}
+function showHome(){active=null;el("home").hidden=false;el("editor").hidden=true;renderHome();}
+function renderHome(){const tb=el("projects");tb.replaceChildren();for(const p of db){let tr=document.createElement("tr");for(const value of [p.project.job_name||"（無題）",p.project.location,p.project.survey_date]){let td=document.createElement("td");td.textContent=value;tr.append(td)}let td=document.createElement("td");for(const [title,fn,klass] of [["編集",()=>openProject(p.id),""],["複製",()=>duplicate(p.id),"secondary"],["削除",()=>removeProject(p.id),"danger"]]){let b=document.createElement("button");b.textContent=title;b.className=klass;b.onclick=fn;td.append(b)}tr.append(td);tb.append(tr)}}
+function openProject(id){if(active)saveProject();active=id;const p=db.find(p=>p.id===id);if(!p)return showHome();el("home").hidden=true;el("editor").hidden=false;for(const field of ["job_name","location","survey_date","surveyor"])el(field).value=p.project[field]||"";renderSections(p);el("status").textContent=""}
+function rowElement(data={}){const tr=document.createElement("tr");for(const [key,label] of fields){const td=document.createElement("td");let input;if(key==="section_b"){input=document.createElement("select");for(const value of ["","無","有"]){let opt=document.createElement("option");opt.value=value;opt.textContent=value;input.append(opt)}}else{input=document.createElement("input");input.type="text";input.autocomplete="off"}input.dataset.field=key;input.setAttribute("aria-label",label);input.value=data[key]||"";td.append(input);tr.append(td)}
+const td=document.createElement("td");for(const [symbol,title,op] of [["複","複製","copy"],["↑","上へ","up"],["↓","下へ","down"],["×","削除","del"]]){const b=document.createElement("button");b.textContent=symbol;b.title=title;b.className=op==="del"?"danger":"secondary";b.onclick=()=>rowAction(tr,op);td.append(b)}tr.append(td);return tr}
+function rowValues(tr){const o={};tr.querySelectorAll("[data-field]").forEach(e=>o[e.dataset.field]=e.value);return o}
+function rowAction(tr,op){const tbody=tr.parentElement;if(op==="copy"){tr.after(rowElement(rowValues(tr)))}else if(op==="del"){tr.remove()}else if(op==="up"&&tr.previousElementSibling){tbody.insertBefore(tr,tr.previousElementSibling)}else if(op==="down"&&tr.nextElementSibling){tbody.insertBefore(tr.nextElementSibling,tr)}}
+function renderSections(p){const root=el("sections");root.replaceChildren();for(const [key,title] of cats){const sec=document.createElement("section");sec.className="panel";sec.dataset.category=key;sec.innerHTML='<div class="section-head"><h2>'+title+'</h2><button type="button">＋ 行追加</button></div><div class="scroll"><table><thead><tr>'+fields.map(([,label])=>'<th>'+label+'</th>').join("")+'<th>操作</th></tr></thead><tbody></tbody></table></div>';const tbody=sec.querySelector("tbody");for(const row of p.parcels[key]||[])tbody.append(rowElement(row));if(!tbody.children.length)tbody.append(rowElement());sec.querySelector("button").onclick=()=>{const r=rowElement();tbody.append(r);r.querySelector("input").focus()};root.append(sec)}}
+function collect(){const project={};for(const k of ["job_name","location","survey_date","surveyor"])project[k]=el(k).value;const parcels={};el("sections").querySelectorAll("[data-category]").forEach(sec=>{parcels[sec.dataset.category]=[...sec.querySelectorAll("tbody tr")].map(rowValues)});return {project,parcels}}
+function saveProject(){if(!active)return true;const p=db.find(p=>p.id===active);if(!p)return false;const d=collect();p.project=d.project;p.parcels=d.parcels;const ok=persist();el("status").textContent=ok?"端末内に保存しました":"保存失敗";return ok}
+function duplicate(id){const p=db.find(x=>x.id===id);if(!p)return;const n=structuredClone(p);n.id=blank().id;n.project.job_name+=" copy";db.unshift(n);if(persist())renderHome()}
+function removeProject(id){if(!confirm("この案件を端末から削除しますか？"))return;db=db.filter(p=>p.id!==id);if(persist())renderHome()}
+function printProject(){if(!active)return;const d=collect();const box=el("printSheet");box.replaceChildren();const title=document.createElement("h1");title.textContent="土地閲覧調書";box.append(title);const info=document.createElement("div");info.className="print-info";for(const [key,label] of [["job_name","業務名"],["location","所在"],["survey_date","調査年月日"],["surveyor","調査者"]]){const item=document.createElement("div");const b=document.createElement("b");b.textContent=label;item.append(b,document.createTextNode(d.project[key]||""));info.append(item)}box.append(info);
+for(const [key,label] of cats){const section=document.createElement("section");const h=document.createElement("h2");h.textContent=label;section.append(h);const table=document.createElement("table");const thead=document.createElement("thead");const thr=document.createElement("tr");fields.forEach(([,name])=>{const th=document.createElement("th");th.textContent=name;thr.append(th)});thead.append(thr);table.append(thead);const tbody=document.createElement("tbody");for(const entry of (d.parcels[key].length?d.parcels[key]:[{}])){const tr=document.createElement("tr");for(const [f] of fields){const td=document.createElement("td");td.textContent=entry[f]||"";tr.append(td)}tbody.append(tr)}table.append(tbody);section.append(table);box.append(section)}
+window.print()}
+el("new").onclick=()=>{const p=blank();db.unshift(p);if(persist())openProject(p.id)};
+el("save").onclick=()=>saveProject();el("print").onclick=()=>{if(!active)return alert("案件を選択してください");if(saveProject())printProject()};
+el("back").onclick=()=>{if(active)saveProject();showHome()};
+document.addEventListener("keydown",e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="s"){e.preventDefault();saveProject()}});
+showHome();
 </script></body></html>
