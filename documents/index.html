@@ -9,7 +9,7 @@ nav{display:flex;gap:10px;padding:14px max(16px,calc((100vw - 1100px)/2)) 0;flex
 button{cursor:pointer;border:1px solid #aab8c5;border-radius:7px;background:white;font:inherit;padding:11px 18px}
 button.active{background:#176ba8;color:white;border-color:#176ba8;font-weight:700}
 button.output{margin-left:auto;background:#137650;color:white;border-color:#137650}
-.merge{max-width:1100px;margin:14px auto;padding:16px;background:white;border:1px solid #ced6df;border-radius:10px}.merge h2{font-size:17px;margin:0 0 8px}.merge p{font-size:13px;color:#55616a}.merge input{max-width:100%}.merge button{background:#176ba8;color:white;margin-left:8px}.merge button:disabled{opacity:.5;cursor:wait}.merge .status{display:block;font-size:13px;margin-top:9px} .divider-sheet{width:210mm;min-height:297mm;background:white;position:relative;margin:18px auto;box-shadow:0 2px 10px #ccc;break-after:page}.divider-title{position:absolute;top:47%;width:100%;text-align:center;font-family:"Yu Mincho","Hiragino Mincho ProN",serif;font-size:16pt;letter-spacing:.28em;text-decoration:underline;text-underline-offset:6px}.divider-empty{padding:25px;text-align:center;color:#666}.panel.divider-panel{background:#e9edf2;border:none}main{max-width:1100px;margin:12px auto;padding:0 12px 24px}
+.merge{max-width:1100px;margin:14px auto;padding:16px;background:white;border:1px solid #ced6df;border-radius:10px}.merge h2{font-size:17px;margin:0 0 8px}.merge p{font-size:13px;color:#55616a}.merge input{max-width:100%}.merge button{background:#176ba8;color:white;margin-left:8px}.merge button:disabled{opacity:.5;cursor:wait}.merge .status{display:block;font-size:13px;margin-top:9px} .divider-empty{padding:25px;text-align:center;color:#666}.panel.divider-panel{background:#e9edf2;border:none}main{max-width:1100px;margin:12px auto;padding:0 12px 24px}
 .panel{background:#fff;border:1px solid #ced6df;border-radius:10px;overflow:hidden;display:none}
 .panel.active{display:block}
 iframe{border:0;width:100%;height:1200px;display:block}
@@ -23,7 +23,7 @@ iframe{border:0;width:100%;height:1200px;display:block}
 <button data-tab="dividers" aria-selected="false" id="dividerTab">③ 選択した成果品（0）</button>
 <button class="output" id="print">表示中の書類をPDF出力</button>
 </nav>
-<p class="note">タブを切り替えても入力内容はそのまま残ります。目録のチェックに合わせ、原本PDFから該当する仕切りページをそのまま取り出します。成果品本体の挿入は今後対応します。</p>
+<p class="note">タブを切り替えても入力内容はそのまま残ります。添付された原本PDFから該当ページを抽出します（仕切りページは描画・再作成しません）。成果品本体の挿入は今後対応します。</p>
 <main>
 <section id="cover" class="panel active"><iframe id="coverFrame" title="表紙作成" src="../document-cover/"></iframe></section>
 <section id="list" class="panel"><iframe id="listFrame" title="成果品目録作成" src="../deliverables/"></iframe></section>
@@ -43,7 +43,7 @@ function selectedRows(){
 async function sourcePdf(){
  if(!sourcePromise)sourcePromise=(async()=>{
   if(!window.PDFLib)throw Error("PDF処理ライブラリの読込に失敗");
-  const response=await fetch("./assets/original-sample-32pages.pdf");
+  const response=await fetch("./assets/original-sample-32pages.pdf?v=original-e565402e");
   if(!response.ok)throw Error("原本PDFが見つかりません（HTTP "+response.status+"）");
   const original=await PDFLib.PDFDocument.load(await response.arrayBuffer());
   if(original.getPageCount()!==32)throw Error("原本のページ数が正しくありません");
@@ -98,7 +98,7 @@ printButton.addEventListener("click",async()=>{
  printButton.disabled=true;
  try{
   const pdf=await makeSelectedPdf(rows),url=URL.createObjectURL(pdf);
-  const a=document.createElement("a");a.href=url;a.download="成果品_原本仕切り_"+rows.length+"枚.pdf";
+  const a=document.createElement("a");a.href=url;a.download="成果サンプル原本_選択ページ_"+rows.length+"枚.pdf";
   document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);
  }catch(e){alert("PDF出力に失敗しました："+e.message)}
  finally{printButton.disabled=false}
