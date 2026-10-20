@@ -78,7 +78,7 @@ function syncFromShared(){
  if(!p.project.survey_date)p.project.survey_date=new Date().toLocaleDateString("sv-SE");
  persist();return true;
 }
-window.prepareIntegration=(id)=>{const target=id||selectedId||localStorage.getItem("land-inspection-active-id");if(target){if(target===selectedId)syncFromShared();const p=db.find(x=>x.id===target);if(!p)return false;openProject(target)}else{if(!db.length)return false;openProject(db[0].id)}printProject(false);return true};
+window.prepareIntegration=(id)=>{try{const stored=JSON.parse(localStorage.getItem(KEY)||"[]");if(Array.isArray(stored))db=stored}catch(e){}const target=id||selectedId||localStorage.getItem("land-inspection-active-id");if(target){if(target===selectedId)syncFromShared();const p=db.find(x=>x.id===target);if(!p)return false;openProject(target)}else{if(!db.length)return false;openProject(db[0].id)}printProject(false);return true};
 el("new").onclick=()=>{const p=blank();db.unshift(p);if(persist())openProject(p.id)};
 el("save").onclick=()=>saveProject();el("print").onclick=()=>{if(!active)return alert("案件を選択してください");if(saveProject())printProject()};
 el("back").onclick=()=>{if(active)saveProject();showHome()};
