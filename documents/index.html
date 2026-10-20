@@ -23,7 +23,7 @@ iframe{border:0;width:100%;height:1200px;display:block}
 <button class="output" id="print">表示中の書類をPDF出力</button>
 </nav>
 <p class="note">タブを切り替えても入力内容はそのまま残ります。現在は書類ごとのPDF出力に対応しています。</p>
-<section class="merge"><h2>③ チェック項目の仕切りPDFを作成</h2><p>一度だけ「成果サンプル」の原本PDF（全32ページ）を登録。目録でチェックした項目に対応するページを順番に抽出します。PDFはこのブラウザ内に保存し、外部へアップロードしません。</p><input type="file" id="sourcePdf" accept="application/pdf,.pdf"><button id="extract">チェック項目のPDFを作成</button><span id="mergeStatus" class="status">原本PDF：未確認</span><p>※ 今回は仕切りページの抽出です。実際の計算書・図面の自動挿入や、表紙・目録との一括結合はまだ含みません。</p></section>
+<section class="merge"><h2>③ チェックした仕切りページをPDF出力</h2><p>目録でチェックした項目の仕切りページを、原本と同じく中央に項目名を配置したA4縦PDFとして自動作成します。原本PDFの登録は不要です。</p><button id="extract">チェック項目のPDFを作成</button><span id="mergeStatus" class="status">目録で項目を選んでください。</span><p>※ 仕切りページの生成です。測量図・計算書などの実際の成果品は含みません。</p></section>
 <main>
 <section id="cover" class="panel active"><iframe id="coverFrame" title="表紙作成" src="../document-cover/"></iframe></section>
 <section id="list" class="panel"><iframe id="listFrame" title="成果品目録作成" src="../deliverables/"></iframe></section>
@@ -41,37 +41,44 @@ document.getElementById("print").addEventListener("click",()=>{
  frame.contentWindow.focus();frame.contentWindow.print();
 });
 
-const sourceInput=document.getElementById("sourcePdf"),extractBtn=document.getElementById("extract"),mergeStatus=document.getElementById("mergeStatus");
-const DBNAME="survey-document-pdfs",STORE="files";
-async function storePdf(buffer){return new Promise((resolve,reject)=>{const req=indexedDB.open(DBNAME,1);req.onupgradeneeded=()=>req.result.createObjectStore(STORE);req.onerror=()=>reject(req.error);req.onsuccess=()=>{const db=req.result;const tx=db.transaction(STORE,"readwrite");tx.objectStore(STORE).put(buffer,"sample");tx.oncomplete=()=>{db.close();resolve()};tx.onerror=()=>reject(tx.error)}})}
-async function readPdf(){return new Promise((resolve,reject)=>{const req=indexedDB.open(DBNAME,1);req.onupgradeneeded=()=>req.result.createObjectStore(STORE);req.onerror=()=>reject(req.error);req.onsuccess=()=>{const db=req.result;const tx=db.transaction(STORE,"readonly");const get=tx.objectStore(STORE).get("sample");get.onsuccess=()=>{db.close();resolve(get.result||null)};get.onerror=()=>reject(get.error)}})}
-sourceInput.addEventListener("change",async()=>{
- const file=sourceInput.files[0];if(!file)return;
- try{
-  const bytes=await file.arrayBuffer(),doc=await PDFLib.PDFDocument.load(bytes);
-  if(doc.getPageCount()!==32)throw Error("32ページの成果サンプルPDFを指定してな");
-  await storePdf(bytes);mergeStatus.textContent="原本PDF：登録済み（32ページ・ブラウザに保存）";
- }catch(err){mergeStatus.textContent="登録失敗："+err.message}
-});
-readPdf().then(b=>{if(b)mergeStatus.textContent="原本PDF：保存済み（再指定不要）"}).catch(()=>{});
+
+const extractBtn=document.getElementById("extract"),mergeStatus=document.getElementById("mergeStatus");
 extractBtn.addEventListener("click",async()=>{
  extractBtn.disabled=true;
  try{
-  const bytes=await readPdf();if(!bytes)throw Error("先に32ページの原本PDFを登録してな");
-  const doc=document.getElementById("listFrame").contentDocument;
-  if(!doc)throw Error("目録を読み込めません");
-  const chosen=[...doc.querySelectorAll('input[type="checkbox"][data-row]:checked')].map(x=>Number(x.dataset.row));
-  if(!chosen.length)throw Error("成果品目録で項目をチェックしてな");
-  const original=await PDFLib.PDFDocument.load(bytes);
-  if(original.getPageCount()!==32)throw Error("原本PDFが32ページではありません");
-  const output=await PDFLib.PDFDocument.create();
-  const pages=await output.copyPages(original,chosen.map(n=>n+2));
-  pages.forEach(p=>output.addPage(p));
-  const data=await output.save(),blob=new Blob([data],{type:"application/pdf"}),url=URL.createObjectURL(blob),a=document.createElement("a");
-  a.href=url;a.download="成果品_選択項目_"+chosen.length+"枚.pdf";a.click();
-  mergeStatus.textContent="選択した"+chosen.length+"項目のPDFを作成しました。ダウンロードしたPDFを開いて印刷できます。";
+  if(!window.PDFLib)throw Error("PDF作成ライブラリを読み込めません。通信状態を確認してください");
+  const listDoc=document.getElementById("listFrame").contentDocument;
+  if(!listDoc||!listDoc.defaultView||!listDoc.defaultView.items)throw Error("目録が読み込まれていません");
+  const chosen=[...listDoc.querySelectorAll('input[type="checkbox"][data-row]:checked')].map(x=>Number(x.dataset.row));
+  if(!chosen.length)throw Error("先に目録で項目をチェックしてください");
+  const items=listDoc.defaultView.items;
+  const out=await PDFLib.PDFDocument.create();
+  const W=1240,H=1754;
+  const canvas=document.createElement("canvas");canvas.width=W;canvas.height=H;
+  const ctx=canvas.getContext("2d",{alpha:false});
+  for(const idx of chosen){
+   const [number,label]=items[idx];let title=label.split("\\n")[0].replace(/　/g," ").trim();
+   if(number)title=number+". "+title;
+   const isSub=!number;
+   ctx.fillStyle="#fff";ctx.fillRect(0,0,W,H);ctx.fillStyle="#111";
+   ctx.textAlign="center";ctx.textBaseline="middle";
+   ctx.font=(isSub?"normal":"bold")+' 33px "Yu Mincho","Hiragino Mincho ProN","Noto Serif JP",serif';
+   const spacing=7;
+   const chars=[...title];
+   const measured=chars.reduce((n,ch)=>n+ctx.measureText(ch).width,0)+Math.max(0,chars.length-1)*spacing;
+   let x=(W-measured)/2;
+   const y=H*0.471;
+   for(const ch of chars){const w=ctx.measureText(ch).width;ctx.fillText(ch,x+w/2,y);x+=w+spacing}
+   const lineWidth=measured;ctx.strokeStyle="#111";ctx.lineWidth=1.25;ctx.beginPath();ctx.moveTo((W-lineWidth)/2,y+17);ctx.lineTo((W+lineWidth)/2,y+17);ctx.stroke();
+   const png=await out.embedPng(canvas.toDataURL("image/png"));
+   const page=out.addPage([595.28,841.89]);page.drawImage(png,{x:0,y:0,width:595.28,height:841.89});
+  }
+  const bytes=await out.save();
+  const blob=new Blob([bytes],{type:"application/pdf"}),url=URL.createObjectURL(blob);
+  const a=document.createElement("a");a.href=url;a.download="成果品_仕切り_"+chosen.length+"項目.pdf";a.click();
+  mergeStatus.textContent=chosen.length+"項目の仕切りPDFを作成しました。";
   setTimeout(()=>URL.revokeObjectURL(url),60000);
- }catch(err){mergeStatus.textContent="出力できません："+err.message}
+ }catch(e){mergeStatus.textContent="作成できません："+e.message}
  finally{extractBtn.disabled=false}
 });
 </script></body></html>
