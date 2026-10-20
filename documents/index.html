@@ -22,13 +22,11 @@ iframe{border:0;width:100%;height:1200px;display:block}
 <button data-tab="list" aria-selected="false">② 成果品目録</button>
 <button class="output" id="print">表示中の書類をPDF出力</button>
 </nav>
-<p class="note">タブを切り替えても入力内容はそのまま残ります。現在は書類ごとのPDF出力に対応しています。</p>
-<section class="merge"><h2>③ チェックした仕切りページをPDF出力</h2><p>目録でチェックした項目の仕切りページを、原本と同じく中央に項目名を配置したA4縦PDFとして自動作成します。原本PDFの登録は不要です。</p><button id="extract">チェック項目のPDFを作成</button><span id="mergeStatus" class="status">目録で項目を選んでください。</span><p>※ 仕切りページの生成です。測量図・計算書などの実際の成果品は含みません。</p></section>
+<p class="note">タブを切り替えても入力内容はそのまま残ります。目録のチェックは、今後の成果品一括出力で使用します。</p>
 <main>
 <section id="cover" class="panel active"><iframe id="coverFrame" title="表紙作成" src="../document-cover/"></iframe></section>
 <section id="list" class="panel"><iframe id="listFrame" title="成果品目録作成" src="../deliverables/"></iframe></section>
 </main>
-<script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
 <script>
 let current="cover";
 document.querySelectorAll("[data-tab]").forEach(btn=>btn.addEventListener("click",()=>{
@@ -42,43 +40,4 @@ document.getElementById("print").addEventListener("click",()=>{
 });
 
 
-const extractBtn=document.getElementById("extract"),mergeStatus=document.getElementById("mergeStatus");
-extractBtn.addEventListener("click",async()=>{
- extractBtn.disabled=true;
- try{
-  if(!window.PDFLib)throw Error("PDF作成ライブラリを読み込めません。通信状態を確認してください");
-  const listDoc=document.getElementById("listFrame").contentDocument;
-  if(!listDoc||!listDoc.defaultView||!listDoc.defaultView.getDeliverableItems)throw Error("目録が読み込まれていません");
-  const chosen=[...listDoc.querySelectorAll('input[type="checkbox"][data-row]:checked')].map(x=>Number(x.dataset.row));
-  if(!chosen.length)throw Error("先に目録で項目をチェックしてください");
-  const items=listDoc.defaultView.getDeliverableItems();
-  const out=await PDFLib.PDFDocument.create();
-  const W=1240,H=1754;
-  const canvas=document.createElement("canvas");canvas.width=W;canvas.height=H;
-  const ctx=canvas.getContext("2d",{alpha:false});
-  for(const idx of chosen){
-   const [number,label]=items[idx];let title=label.split(String.fromCharCode(10))[0].replace(/　/g," ").trim();
-   if(number)title=number+". "+title;
-   const isSub=!number;
-   ctx.fillStyle="#fff";ctx.fillRect(0,0,W,H);ctx.fillStyle="#111";
-   ctx.textAlign="center";ctx.textBaseline="middle";
-   ctx.font=(isSub?"normal":"bold")+' 33px "Yu Mincho","Hiragino Mincho ProN","Noto Serif JP",serif';
-   const spacing=7;
-   const chars=[...title];
-   const measured=chars.reduce((n,ch)=>n+ctx.measureText(ch).width,0)+Math.max(0,chars.length-1)*spacing;
-   let x=(W-measured)/2;
-   const y=H*0.471;
-   for(const ch of chars){const w=ctx.measureText(ch).width;ctx.fillText(ch,x+w/2,y);x+=w+spacing}
-   const lineWidth=measured;ctx.strokeStyle="#111";ctx.lineWidth=1.25;ctx.beginPath();ctx.moveTo((W-lineWidth)/2,y+17);ctx.lineTo((W+lineWidth)/2,y+17);ctx.stroke();
-   const png=await out.embedPng(canvas.toDataURL("image/png"));
-   const page=out.addPage([595.28,841.89]);page.drawImage(png,{x:0,y:0,width:595.28,height:841.89});
-  }
-  const bytes=await out.save();
-  const blob=new Blob([bytes],{type:"application/pdf"}),url=URL.createObjectURL(blob);
-  const a=document.createElement("a");a.href=url;a.download="成果品_仕切り_"+chosen.length+"項目.pdf";a.click();
-  mergeStatus.textContent=chosen.length+"項目の仕切りPDFを作成しました。";
-  setTimeout(()=>URL.revokeObjectURL(url),60000);
- }catch(e){mergeStatus.textContent="作成できません："+e.message}
- finally{extractBtn.disabled=false}
-});
 </script></body></html>
