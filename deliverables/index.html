@@ -78,7 +78,7 @@ items.forEach(([num,name],i)=>{
  const fileInput=document.createElement("input");fileInput.type="file";fileInput.accept=".pdf,application/pdf";fileInput.dataset.attach=i;fileInput.setAttribute("aria-label",name.replace(/\\s/g,"")+"のPDFファイル選択");
  const state=document.createElement("span");state.className="file-state";state.dataset.fileState=i;state.textContent="未登録";
  const clear=document.createElement("button");clear.type="button";clear.dataset.remove=i;clear.textContent="解除";clear.hidden=true;
- upload.append(fileInput,state,clear);
+ if(["5","7","8","10","14"].includes(num)){upload.classList.add("group-upload");upload.textContent="子項目にPDFを登録";}else{upload.append(fileInput,state,clear);}
  if(n)tr.append(n);tr.append(c,item,upload);tbody.append(tr);
 });
 const inputs=[...document.querySelectorAll(".check input")];
