@@ -51,6 +51,7 @@ const items=[
 ["14","相　続　関　係"],
 ["","①　相続関係説明図"],["","②　相続を証する書面"]
 ];
+window.getDeliverableItems=()=>items;
 const tbody=document.getElementById("rows");
 items.forEach(([num,name],i)=>{
  const tr=document.createElement("tr");const next=items[i+1];const prev=items[i-1];
