@@ -42,6 +42,10 @@ header,main,.toolbar,.no-print{display:none!important}body{background:white;colo
 "use strict";
 // Browser-only: no fetch, API, analytics, cookies, or GitHub write operations.
 const KEY="land-inspection-projects-v2";
+const SHARED_KEY="survey-document-projects-v1";
+const selectedId=new URLSearchParams(location.search).get("project");
+const integrated=!!selectedId;
+
 const cats=[["target","業務対象地"],["adjacent","隣接地"],["road_water","里道・水路・対面地等"]];
 const fields=[["parcel_number","地番"],["land_category","地目"],["area","地積"],["owner_address","登記名義人住所"],["owner_name","登記名義人氏名"],["section_b","乙区"],["remarks","備考"],["survey_count","筆数"]];
 const el=id=>document.getElementById(id);
@@ -50,9 +54,9 @@ let db=[],active=null;
 try{const item=localStorage.getItem(KEY);if(item){const parsed=JSON.parse(item);if(Array.isArray(parsed))db=parsed}}catch(e){alert("保存データを読み込めませんでした。ブラウザの保存設定を確認してください。")}
 function persist(){try{localStorage.setItem(KEY,JSON.stringify(db));return true}catch(e){alert("端末内への保存に失敗しました。保存容量またはブラウザ設定を確認してください。");return false}}
 function blank(){return {id:String(Date.now())+"-"+Math.random().toString(36).slice(2),project:{job_name:"",location:"",survey_date:new Date().toLocaleDateString("sv-SE"),surveyor:""},parcels:Object.fromEntries(cats.map(([k])=>[k,[{}]]))}}
-function showHome(){active=null;el("home").hidden=false;el("editor").hidden=true;renderHome();}
+function showHome(){if(integrated){openProject(selectedId);return}active=null;el("home").hidden=false;el("editor").hidden=true;renderHome();}
 function renderHome(){const tb=el("projects");tb.replaceChildren();for(const p of db){let tr=document.createElement("tr");for(const value of [p.project.job_name||"（無題）",p.project.location,p.project.survey_date]){let td=document.createElement("td");td.textContent=value;tr.append(td)}let td=document.createElement("td");for(const [title,fn,klass] of [["編集",()=>openProject(p.id),""],["複製",()=>duplicate(p.id),"secondary"],["削除",()=>removeProject(p.id),"danger"]]){let b=document.createElement("button");b.textContent=title;b.className=klass;b.onclick=fn;td.append(b)}tr.append(td);tb.append(tr)}}
-function openProject(id){if(active)saveProject();active=id;try{localStorage.setItem("land-inspection-active-id",id)}catch(e){};const p=db.find(p=>p.id===id);if(!p)return showHome();el("home").hidden=true;el("editor").hidden=false;for(const field of ["job_name","location","survey_date","surveyor"])el(field).value=p.project[field]||"";renderSections(p);el("status").textContent=""}
+function openProject(id){if(active&&active!==id)saveProject();active=id;try{localStorage.setItem("land-inspection-active-id",id)}catch(e){};const p=db.find(p=>p.id===id);if(!p)return showHome();el("home").hidden=true;el("editor").hidden=false;for(const field of ["job_name","location","survey_date","surveyor"])el(field).value=p.project[field]||"";renderSections(p);el("status").textContent=""}
 function rowElement(data={}){const tr=document.createElement("tr");for(const [key,label] of fields){const td=document.createElement("td");let input;if(key==="section_b"){input=document.createElement("select");for(const value of ["","無","有"]){let opt=document.createElement("option");opt.value=value;opt.textContent=value;input.append(opt)}}else{input=document.createElement("input");input.type="text";input.autocomplete="off"}input.dataset.field=key;input.setAttribute("aria-label",label);input.value=data[key]||"";td.append(input);tr.append(td)}
 const td=document.createElement("td");for(const [symbol,title,op] of [["複","複製","copy"],["↑","上へ","up"],["↓","下へ","down"],["×","削除","del"]]){const b=document.createElement("button");b.textContent=symbol;b.title=title;b.className=op==="del"?"danger":"secondary";b.onclick=()=>rowAction(tr,op);td.append(b)}tr.append(td);return tr}
 function rowValues(tr){const o={};tr.querySelectorAll("[data-field]").forEach(e=>o[e.dataset.field]=e.value);return o}
@@ -65,10 +69,27 @@ function removeProject(id){if(!confirm("この案件を端末から削除しま�
 function printProject(shouldPrint=true){if(!active)return;const d=collect();const box=el("printSheet");box.replaceChildren();const title=document.createElement("h1");title.textContent="土地閲覧調書";box.append(title);const info=document.createElement("div");info.className="print-info";for(const [key,label] of [["job_name","業務名"],["location","所在"],["survey_date","調査年月日"],["surveyor","調査者"]]){const item=document.createElement("div");const b=document.createElement("b");b.textContent=label;item.append(b,document.createTextNode(d.project[key]||""));info.append(item)}box.append(info);
 for(const [key,label] of cats){const section=document.createElement("section");const h=document.createElement("h2");h.textContent=label;section.append(h);const table=document.createElement("table");const thead=document.createElement("thead");const thr=document.createElement("tr");fields.forEach(([,name])=>{const th=document.createElement("th");th.textContent=name;thr.append(th)});thead.append(thr);table.append(thead);const tbody=document.createElement("tbody");for(const entry of (d.parcels[key].length?d.parcels[key]:[{}])){const tr=document.createElement("tr");for(const [f] of fields){const td=document.createElement("td");td.textContent=entry[f]||"";tr.append(td)}tbody.append(tr)}table.append(tbody);section.append(table);box.append(section)}
 if(shouldPrint)window.print()}
-window.prepareIntegration=()=>{const id=localStorage.getItem("land-inspection-active-id");const p=db.find(x=>x.id===id)||db[0];if(!p)return false;openProject(p.id);printProject(false);return true};
+function syncFromShared(){
+ let projects=[];try{projects=JSON.parse(localStorage.getItem(SHARED_KEY)||"[]")}catch(e){}
+ const shared=projects.find(p=>p.id===selectedId);if(!shared)return false;
+ let p=db.find(p=>p.id===selectedId);
+ if(!p){p=blank();p.id=selectedId;db.unshift(p)}
+ p.project.job_name=shared.project||"";p.project.location=shared.location||"";p.project.surveyor=shared.surveyor||"";
+ if(!p.project.survey_date)p.project.survey_date=new Date().toLocaleDateString("sv-SE");
+ persist();return true;
+}
+window.prepareIntegration=(id)=>{const target=id||selectedId||localStorage.getItem("land-inspection-active-id");if(target){if(target===selectedId)syncFromShared();const p=db.find(x=>x.id===target);if(!p)return false;openProject(target)}else{if(!db.length)return false;openProject(db[0].id)}printProject(false);return true};
 el("new").onclick=()=>{const p=blank();db.unshift(p);if(persist())openProject(p.id)};
 el("save").onclick=()=>saveProject();el("print").onclick=()=>{if(!active)return alert("案件を選択してください");if(saveProject())printProject()};
 el("back").onclick=()=>{if(active)saveProject();showHome()};
 document.addEventListener("keydown",e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="s"){e.preventDefault();saveProject()}});
-showHome();
+if(integrated){
+ syncFromShared();
+ el("home").remove();el("back").remove();
+ const fieldsPanel=document.querySelector(".project-fields");if(fieldsPanel)fieldsPanel.style.display="none";
+ const p=db.find(p=>p.id===selectedId);
+ if(p)openProject(p.id);
+ else{el("editor").hidden=false;el("sections").textContent="案件が見つかりません。統合画面から新規案件を作成してください。";}
+ window.addEventListener("storage",e=>{if(e.key===SHARED_KEY){syncFromShared();if(active===selectedId)openProject(selectedId)}});
+}else showHome();
 </script></body></html>
