@@ -56,7 +56,7 @@ function persist(){try{localStorage.setItem(KEY,JSON.stringify(db));return true}
 function blank(){return {id:String(Date.now())+"-"+Math.random().toString(36).slice(2),project:{job_name:"",location:"",survey_date:new Date().toLocaleDateString("sv-SE"),surveyor:""},parcels:Object.fromEntries(cats.map(([k])=>[k,[{}]]))}}
 function showHome(){if(integrated){openProject(selectedId);return}active=null;el("home").hidden=false;el("editor").hidden=true;renderHome();}
 function renderHome(){const tb=el("projects");tb.replaceChildren();for(const p of db){let tr=document.createElement("tr");for(const value of [p.project.job_name||"（無題）",p.project.location,p.project.survey_date]){let td=document.createElement("td");td.textContent=value;tr.append(td)}let td=document.createElement("td");for(const [title,fn,klass] of [["編集",()=>openProject(p.id),""],["複製",()=>duplicate(p.id),"secondary"],["削除",()=>removeProject(p.id),"danger"]]){let b=document.createElement("button");b.textContent=title;b.className=klass;b.onclick=fn;td.append(b)}tr.append(td);tb.append(tr)}}
-function openProject(id){if(active&&active!==id)saveProject();active=id;try{localStorage.setItem("land-inspection-active-id",id)}catch(e){};const p=db.find(p=>p.id===id);if(!p)return showHome();el("home").hidden=true;el("editor").hidden=false;for(const field of ["job_name","location","survey_date","surveyor"])el(field).value=p.project[field]||"";renderSections(p);el("status").textContent=""}
+function openProject(id){if(active&&active!==id)saveProject();active=id;try{localStorage.setItem("land-inspection-active-id",id)}catch(e){};const p=db.find(p=>p.id===id);if(!p)return showHome();if(el("home"))el("home").hidden=true;el("editor").hidden=false;for(const field of ["job_name","location","survey_date","surveyor"])el(field).value=p.project[field]||"";renderSections(p);el("status").textContent=""}
 function rowElement(data={}){const tr=document.createElement("tr");for(const [key,label] of fields){const td=document.createElement("td");let input;if(key==="section_b"){input=document.createElement("select");for(const value of ["","無","有"]){let opt=document.createElement("option");opt.value=value;opt.textContent=value;input.append(opt)}}else{input=document.createElement("input");input.type="text";input.autocomplete="off"}input.dataset.field=key;input.setAttribute("aria-label",label);input.value=data[key]||"";td.append(input);tr.append(td)}
 const td=document.createElement("td");for(const [symbol,title,op] of [["複","複製","copy"],["↑","上へ","up"],["↓","下へ","down"],["×","削除","del"]]){const b=document.createElement("button");b.textContent=symbol;b.title=title;b.className=op==="del"?"danger":"secondary";b.onclick=()=>rowAction(tr,op);td.append(b)}tr.append(td);return tr}
 function rowValues(tr){const o={};tr.querySelectorAll("[data-field]").forEach(e=>o[e.dataset.field]=e.value);return o}
@@ -85,7 +85,7 @@ if(el("back"))el("back").onclick=()=>{if(active)saveProject();showHome()};
 document.addEventListener("keydown",e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="s"){e.preventDefault();saveProject()}});
 if(integrated){
  syncFromShared();
- el("home").remove();el("back").remove();
+ if(el("home"))el("home").remove();if(el("back"))el("back").remove();
  const fieldsPanel=document.querySelector(".project-fields");if(fieldsPanel)fieldsPanel.style.display="none";
  const p=db.find(p=>p.id===selectedId);
  if(p)openProject(p.id);
