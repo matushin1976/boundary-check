@@ -57,7 +57,7 @@ extractBtn.addEventListener("click",async()=>{
   const canvas=document.createElement("canvas");canvas.width=W;canvas.height=H;
   const ctx=canvas.getContext("2d",{alpha:false});
   for(const idx of chosen){
-   const [number,label]=items[idx];let title=label.split("\\n")[0].replace(/　/g," ").trim();
+   const [number,label]=items[idx];let title=label.split(String.fromCharCode(10))[0].replace(/　/g," ").trim();
    if(number)title=number+". "+title;
    const isSub=!number;
    ctx.fillStyle="#fff";ctx.fillRect(0,0,W,H);ctx.fillStyle="#111";
