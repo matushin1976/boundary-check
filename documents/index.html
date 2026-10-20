@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>登記・測量関係資料 作成</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#e9edf2;color:#1c2934;font-family:system-ui,"Yu Gothic",sans-serif}
+header{background:#fff;border-bottom:1px solid #d2d8de;padding:18px max(16px,calc((100vw - 1100px)/2))}
+h1{font-size:22px;margin:0 0 7px}header p{font-size:13px;color:#59646e;margin:0}
+nav{display:flex;gap:10px;padding:14px max(16px,calc((100vw - 1100px)/2)) 0;flex-wrap:wrap}
+button{cursor:pointer;border:1px solid #aab8c5;border-radius:7px;background:white;font:inherit;padding:11px 18px}
+button.active{background:#176ba8;color:white;border-color:#176ba8;font-weight:700}
+button.output{margin-left:auto;background:#137650;color:white;border-color:#137650}
+main{max-width:1100px;margin:12px auto;padding:0 12px 24px}
+.panel{background:#fff;border:1px solid #ced6df;border-radius:10px;overflow:hidden;display:none}
+.panel.active{display:block}
+iframe{border:0;width:100%;height:1200px;display:block}
+.note{font-size:13px;color:#4b5866;padding:0 max(16px,calc((100vw - 1100px)/2))}
+@media(max-width:600px){button.output{margin-left:0}nav button{flex:1 1 auto}iframe{height:1080px}}
+</style></head><body>
+<header><h1>登記・測量関係資料 作成</h1><p>表紙と成果品目録を一つの画面で作成・確認できます。</p></header>
+<nav aria-label="書類切替">
+<button class="active" data-tab="cover" aria-selected="true">① 表紙</button>
+<button data-tab="list" aria-selected="false">② 成果品目録</button>
+<button class="output" id="print">表示中の書類をPDF出力</button>
+</nav>
+<p class="note">タブを切り替えても入力内容はそのまま残ります。現在は書類ごとのPDF出力に対応しています。</p>
+<main>
+<section id="cover" class="panel active"><iframe id="coverFrame" title="表紙作成" src="../document-cover/"></iframe></section>
+<section id="list" class="panel"><iframe id="listFrame" title="成果品目録作成" src="../deliverables/"></iframe></section>
+</main>
+<script>
+let current="cover";
+document.querySelectorAll("[data-tab]").forEach(btn=>btn.addEventListener("click",()=>{
+ current=btn.dataset.tab;
+ document.querySelectorAll("[data-tab]").forEach(b=>{const active=b===btn;b.classList.toggle("active",active);b.setAttribute("aria-selected",String(active))});
+ document.querySelectorAll(".panel").forEach(p=>p.classList.toggle("active",p.id===current));
+}));
+document.getElementById("print").addEventListener("click",()=>{
+ const frame=document.getElementById(current==="cover"?"coverFrame":"listFrame");
+ frame.contentWindow.focus();frame.contentWindow.print();
+});
+</script></body></html>
