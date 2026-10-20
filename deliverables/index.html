@@ -17,9 +17,9 @@ td.item.note{white-space:normal;font-size:9pt;line-height:1.1;letter-spacing:nor
 .check label{display:flex;align-items:center;justify-content:center;min-height:6.6mm;cursor:pointer;position:relative}
 .check input{width:17px;height:17px;margin:0;accent-color:#1769a9}
 .mark{display:none;font-family:serif;font-weight:400;font-size:14pt;line-height:1}
-.copy-count{width:2.6em;font:inherit;text-align:center;border:0;border-bottom:1px solid #888;border-radius:0;padding:0 2px;background:transparent;color:inherit}.copy-count:focus{outline:2px solid #1769a9;outline-offset:1px}.status{font-family:system-ui,sans-serif;font-size:13px}
+.copy-count{background:#fff4a3!important;width:2.6em;font:inherit;text-align:center;border:0;border-bottom:1px solid #888;border-radius:0;padding:0 2px;color:inherit}.copy-count:focus{outline:2px solid #1769a9;outline-offset:1px}.status{font-family:system-ui,sans-serif;font-size:13px}
 @page{size:A4 portrait;margin:0}
-@media print{.copy-count{border:0;width:1.8em;text-align:center;outline:none}body{background:white}.controls{display:none}.sheet{margin:0;box-shadow:none;min-height:297mm;padding:13mm 12mm 11mm 22mm;break-after:avoid}
+@media print{.copy-count{background:transparent!important;border:0;width:1.8em;text-align:center;outline:none}body{background:white}.controls{display:none}.sheet{margin:0;box-shadow:none;min-height:297mm;padding:13mm 12mm 11mm 22mm;break-after:avoid}
 .check input{display:none}.check input:checked + .mark{display:inline}.sheet h2{margin-bottom:6mm}}
 @media screen and (max-width:850px){.sheet{transform-origin:top left;zoom:calc(100vw / 850);margin:12px 0}.controls{position:relative;z-index:1}}
 </style></head><body>
@@ -41,7 +41,7 @@ const items=[
 ["7","境　界　測　量"],
 ["","①　計算簿"],["","②　精度管理表"],["","③　座標一覧"],
 ["8","境　界　立　会　確　認"],
-["","①　立会証明書（官、道、民、道）"],["","②　境界確定協議書（　通）"],
+["","①　立会証明書（官 通、民 通）"],["","②　境界確定協議書（　通）"],
 ["9","用　地　実　測　図"],
 ["10","登　記　嘱　託　業　務"],
 ["","①　登記完了証・登記嘱託書の写し"],["","②　地積測量図"],["","③　公図写（登記後）"],["","④　全部事項証明書（登記後）"],
