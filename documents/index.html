@@ -9,7 +9,7 @@ nav{display:flex;gap:10px;padding:14px max(16px,calc((100vw - 1100px)/2)) 0;flex
 button{cursor:pointer;border:1px solid #aab8c5;border-radius:7px;background:white;font:inherit;padding:11px 18px}
 button.active{background:#176ba8;color:white;border-color:#176ba8;font-weight:700}
 button.output{margin-left:auto;background:#137650;color:white;border-color:#137650}
-main{max-width:1100px;margin:12px auto;padding:0 12px 24px}
+.merge{max-width:1100px;margin:14px auto;padding:16px;background:white;border:1px solid #ced6df;border-radius:10px}.merge h2{font-size:17px;margin:0 0 8px}.merge p{font-size:13px;color:#55616a}.merge input{max-width:100%}.merge button{background:#176ba8;color:white;margin-left:8px}.merge button:disabled{opacity:.5;cursor:wait}.merge .status{display:block;font-size:13px;margin-top:9px}main{max-width:1100px;margin:12px auto;padding:0 12px 24px}
 .panel{background:#fff;border:1px solid #ced6df;border-radius:10px;overflow:hidden;display:none}
 .panel.active{display:block}
 iframe{border:0;width:100%;height:1200px;display:block}
@@ -23,10 +23,12 @@ iframe{border:0;width:100%;height:1200px;display:block}
 <button class="output" id="print">表示中の書類をPDF出力</button>
 </nav>
 <p class="note">タブを切り替えても入力内容はそのまま残ります。現在は書類ごとのPDF出力に対応しています。</p>
+<section class="merge"><h2>③ チェック項目の仕切りPDFを作成</h2><p>一度だけ「成果サンプル」の原本PDF（全32ページ）を登録。目録でチェックした項目に対応するページを順番に抽出します。PDFはこのブラウザ内に保存し、外部へアップロードしません。</p><input type="file" id="sourcePdf" accept="application/pdf,.pdf"><button id="extract">チェック項目のPDFを作成</button><span id="mergeStatus" class="status">原本PDF：未確認</span><p>※ 今回は仕切りページの抽出です。実際の計算書・図面の自動挿入や、表紙・目録との一括結合はまだ含みません。</p></section>
 <main>
 <section id="cover" class="panel active"><iframe id="coverFrame" title="表紙作成" src="../document-cover/"></iframe></section>
 <section id="list" class="panel"><iframe id="listFrame" title="成果品目録作成" src="../deliverables/"></iframe></section>
 </main>
+<script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
 <script>
 let current="cover";
 document.querySelectorAll("[data-tab]").forEach(btn=>btn.addEventListener("click",()=>{
@@ -37,5 +39,39 @@ document.querySelectorAll("[data-tab]").forEach(btn=>btn.addEventListener("click
 document.getElementById("print").addEventListener("click",()=>{
  const frame=document.getElementById(current==="cover"?"coverFrame":"listFrame");
  frame.contentWindow.focus();frame.contentWindow.print();
+});
+
+const sourceInput=document.getElementById("sourcePdf"),extractBtn=document.getElementById("extract"),mergeStatus=document.getElementById("mergeStatus");
+const DBNAME="survey-document-pdfs",STORE="files";
+async function storePdf(buffer){return new Promise((resolve,reject)=>{const req=indexedDB.open(DBNAME,1);req.onupgradeneeded=()=>req.result.createObjectStore(STORE);req.onerror=()=>reject(req.error);req.onsuccess=()=>{const db=req.result;const tx=db.transaction(STORE,"readwrite");tx.objectStore(STORE).put(buffer,"sample");tx.oncomplete=()=>{db.close();resolve()};tx.onerror=()=>reject(tx.error)}})}
+async function readPdf(){return new Promise((resolve,reject)=>{const req=indexedDB.open(DBNAME,1);req.onupgradeneeded=()=>req.result.createObjectStore(STORE);req.onerror=()=>reject(req.error);req.onsuccess=()=>{const db=req.result;const tx=db.transaction(STORE,"readonly");const get=tx.objectStore(STORE).get("sample");get.onsuccess=()=>{db.close();resolve(get.result||null)};get.onerror=()=>reject(get.error)}})}
+sourceInput.addEventListener("change",async()=>{
+ const file=sourceInput.files[0];if(!file)return;
+ try{
+  const bytes=await file.arrayBuffer(),doc=await PDFLib.PDFDocument.load(bytes);
+  if(doc.getPageCount()!==32)throw Error("32ページの成果サンプルPDFを指定してな");
+  await storePdf(bytes);mergeStatus.textContent="原本PDF：登録済み（32ページ・ブラウザに保存）";
+ }catch(err){mergeStatus.textContent="登録失敗："+err.message}
+});
+readPdf().then(b=>{if(b)mergeStatus.textContent="原本PDF：保存済み（再指定不要）"}).catch(()=>{});
+extractBtn.addEventListener("click",async()=>{
+ extractBtn.disabled=true;
+ try{
+  const bytes=await readPdf();if(!bytes)throw Error("先に32ページの原本PDFを登録してな");
+  const doc=document.getElementById("listFrame").contentDocument;
+  if(!doc)throw Error("目録を読み込めません");
+  const chosen=[...doc.querySelectorAll('input[type="checkbox"][data-row]:checked')].map(x=>Number(x.dataset.row));
+  if(!chosen.length)throw Error("成果品目録で項目をチェックしてな");
+  const original=await PDFLib.PDFDocument.load(bytes);
+  if(original.getPageCount()!==32)throw Error("原本PDFが32ページではありません");
+  const output=await PDFLib.PDFDocument.create();
+  const pages=await output.copyPages(original,chosen.map(n=>n+2));
+  pages.forEach(p=>output.addPage(p));
+  const data=await output.save(),blob=new Blob([data],{type:"application/pdf"}),url=URL.createObjectURL(blob),a=document.createElement("a");
+  a.href=url;a.download="成果品_選択項目_"+chosen.length+"枚.pdf";a.click();
+  mergeStatus.textContent="選択した"+chosen.length+"項目のPDFを作成しました。ダウンロードしたPDFを開いて印刷できます。";
+  setTimeout(()=>URL.revokeObjectURL(url),60000);
+ }catch(err){mergeStatus.textContent="出力できません："+err.message}
+ finally{extractBtn.disabled=false}
 });
 </script></body></html>
