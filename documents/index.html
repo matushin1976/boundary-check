@@ -29,6 +29,7 @@ iframe{border:0;width:100%;height:1200px;display:block}
 <section id="list" class="panel"><iframe id="listFrame" title="成果品目録作成" src="../deliverables/"></iframe></section>
 <section id="dividers" class="panel divider-panel"><div id="dividerPages" aria-live="polite"><p class="divider-empty">目録で項目をチェックしてください。</p></div></section>
 </main>
+<script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
 <script>
 let current="cover";
 const listFrame=document.getElementById("listFrame"),pages=document.getElementById("dividerPages");
@@ -41,7 +42,7 @@ function syncDividers(){
  pages.replaceChildren();
  if(!selected.length){const p=document.createElement("p");p.className="divider-empty";p.textContent="目録で項目をチェックしてください。";pages.append(p);return}
  selected.forEach(i=>{const [num,label]=items[i];const page=document.createElement("article");page.className="divider-sheet";
- const title=document.createElement("div");title.className="divider-title";title.textContent=(num?num+"　":"")+label.split("\\n")[0].replace(/　/g," ").trim();
+ const title=document.createElement("div");title.className="divider-title";title.textContent=(num?num+"　":"")+label.split(String.fromCharCode(10))[0].replace(/　/g," ").trim();
  page.append(title);pages.append(page)});
 }
 listFrame.addEventListener("load",()=>{
@@ -54,11 +55,36 @@ document.querySelectorAll("[data-tab]").forEach(btn=>btn.addEventListener("click
  document.querySelectorAll(".panel").forEach(p=>p.classList.toggle("active",p.id===current));
  if(current==="dividers")syncDividers();
 }));
-document.getElementById("print").addEventListener("click",()=>{
- if(current==="dividers"){syncDividers();window.print();return}
+async function downloadDividerPdf(){
+ syncDividers();
+ const selected=[...listFrame.contentDocument.querySelectorAll('input[type="checkbox"][data-row]:checked')].map(el=>Number(el.dataset.row));
+ if(!selected.length){alert("まず成果品目録で項目にチェックを入れてください。");return}
+ if(!window.PDFLib){alert("PDFライブラリを読み込めません。インターネット接続を確認してください。");return}
+ const items=listFrame.contentWindow.getDeliverableItems();
+ const pdf=await PDFLib.PDFDocument.create();
+ const canvas=document.createElement("canvas");
+ canvas.width=1240;canvas.height=1754;
+ const ctx=canvas.getContext("2d");
+ for(const i of selected){
+  const [num,label]=items[i];
+  const title=label.split(String.fromCharCode(10))[0].replace(/　/g," ").trim();
+  ctx.fillStyle="#fff";ctx.fillRect(0,0,1240,1754);
+  ctx.fillStyle="#111";ctx.textAlign="center";ctx.textBaseline="middle";
+  ctx.font='bold 39px "Yu Mincho","Hiragino Mincho ProN",serif';
+  const chars=[...title],space=7,width=chars.reduce((total,ch)=>total+ctx.measureText(ch).width,0)+(chars.length-1)*space;
+  let x=(1240-width)/2;const y=830;
+  for(const ch of chars){const w=ctx.measureText(ch).width;ctx.fillText(ch,x+w/2,y);x+=w+space}
+  const img=await pdf.embedPng(canvas.toDataURL("image/png"));
+  const page=pdf.addPage([595.28,841.89]);page.drawImage(img,{x:0,y:0,width:595.28,height:841.89});
+ }
+ const bytes=await pdf.save(),url=URL.createObjectURL(new Blob([bytes],{type:"application/pdf"}));
+ const a=document.createElement("a");a.href=url;a.download="成果品_仕切り_"+selected.length+"枚.pdf";document.body.append(a);a.click();a.remove();
+ setTimeout(()=>URL.revokeObjectURL(url),60000);
+}
+document.getElementById("print").addEventListener("click",async()=>{
+ if(current==="dividers"){try{await downloadDividerPdf()}catch(e){alert("PDF作成エラー："+e.message)}return}
  const frame=document.getElementById(current==="cover"?"coverFrame":"listFrame");
  frame.contentWindow.focus();frame.contentWindow.print();
 });
-
 
 </script></body></html>
