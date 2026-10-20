@@ -111,7 +111,7 @@ async function insertGeneratedPage(out,frameId,elementSelector,isList){
   onclone:clonedDoc=>{
    const style=clonedDoc.createElement("style");
    style.textContent=".paper,.sheet{box-shadow:none!important;margin:0!important;transform:none!important;zoom:1!important;width:210mm!important;height:297mm!important;min-height:297mm!important}"+
-     (isList?".check input[type=checkbox]{display:none!important}.check input[type=checkbox]:checked + .mark{display:inline!important}.copy-count{border:0!important;background:transparent!important;outline:0!important;width:1.8em!important}":"");
+     (isList?"td.upload-cell{display:none!important}.check input[type=checkbox]{display:none!important}.check input[type=checkbox]:checked + .mark{display:inline!important}.copy-count{border:0!important;background:transparent!important;outline:0!important;width:1.8em!important}":"");
    clonedDoc.head.append(style);
   }
  });
