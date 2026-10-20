@@ -262,14 +262,14 @@ async function syncDividers(){
   pages.append(viewer);
  }catch(e){if(ticket===serial)pages.textContent="原本PDFを表示できません："+e.message}
 }
-function syncLandRow(){if(activeCaseId)checkRow(2)}
+function syncLandRow(){/* 調書の選択は手動。空の調書を強制追加しない */}
 window.addEventListener("focus",syncLandRow);
 window.addEventListener("storage",e=>{if(e.key==="land-inspection-projects-v2"||e.key==="land-inspection-active-id")syncLandRow()});
 listFrame.addEventListener("load",()=>{
  const documentHeight=listFrame.contentDocument?.documentElement?.scrollHeight;
  if(documentHeight)listFrame.style.height=Math.max(1100,documentHeight+10)+"px";
  listFrame.contentDocument?.addEventListener("change",syncDividers);
- wireFileInputs();syncLandLink();syncLandRow();
+ wireFileInputs();syncLandLink();
 });
 document.querySelectorAll("[data-tab]").forEach(btn=>btn.addEventListener("click",()=>{
  current=btn.dataset.tab;
@@ -278,10 +278,7 @@ document.querySelectorAll("[data-tab]").forEach(btn=>btn.addEventListener("click
  if(current==="dividers")syncDividers();
 }));
 printButton.addEventListener("click",async()=>{
- if(current!=="dividers"){
-  const frame=document.getElementById("listFrame");
-  frame.contentWindow.focus();frame.contentWindow.print();return;
- }
+ if(!selectedCase()){alert("案件を選択してください");return}
  const rows=selectedRows();
  
  printButton.disabled=true;
