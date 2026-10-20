@@ -8,7 +8,7 @@ h1{font-size:22px;margin:0 0 7px}header p{font-size:13px;color:#59646e;margin:0}
 nav{display:flex;gap:10px;padding:14px max(16px,calc((100vw - 1100px)/2)) 0;flex-wrap:wrap}
 button{cursor:pointer;border:1px solid #aab8c5;border-radius:7px;background:white;font:inherit;padding:11px 18px}
 button.active{background:#176ba8;color:white;border-color:#176ba8;font-weight:700}
-button.output{margin-left:auto;background:#137650;color:white;border-color:#137650}
+button.output{margin-left:auto;background:#137650;color:white;border-color:#137650}.cover-fields{padding:14px 18px 12px;background:#fff;border-bottom:1px solid #d7e0e8;font-family:system-ui,"Yu Gothic",sans-serif}.cover-fields h2{font-size:16px;margin:0 0 10px}.cover-fields-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.cover-fields label{font-size:12px;display:grid;gap:5px}.cover-fields input{font:15px system-ui,sans-serif;padding:8px 9px;border:1px solid #b5c1cb;border-radius:5px;width:100%;min-width:0}@media(max-width:760px){.cover-fields-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .merge{max-width:1100px;margin:14px auto;padding:16px;background:white;border:1px solid #ced6df;border-radius:10px}.merge h2{font-size:17px;margin:0 0 8px}.merge p{font-size:13px;color:#55616a}.merge input{max-width:100%}.merge button{background:#176ba8;color:white;margin-left:8px}.merge button:disabled{opacity:.5;cursor:wait}.merge .status{display:block;font-size:13px;margin-top:9px} .divider-empty{padding:25px;text-align:center;color:#666}.panel.divider-panel{background:#e9edf2;border:none}.list-workspace{display:grid;grid-template-columns:minmax(0,1fr) 260px;align-items:start;gap:8px;padding:8px;background:#e9edf2}.list-workspace>iframe{width:100%;height:1200px;background:#fff}.attach-area{position:sticky;top:8px;border:1px solid #dbe2e8;border-radius:8px;font-family:system-ui,"Yu Gothic",sans-serif;background:#fff;padding:14px 18px;border-bottom:1px solid #dbe2e8}.attach-area h2{font-size:16px;margin:0 0 8px}.attach-grid{display:grid;grid-template-columns:1fr;gap:12px}.attach-box{display:flex;flex-direction:column;gap:8px;border:2px dashed #9eafbf;border-radius:8px;padding:12px;min-height:108px}.attach-box.drag{background:#e9f4ff;border-color:#176ba8}.attach-box input{max-width:100%;font-size:13px}.attach-box small{color:#54636e;overflow-wrap:anywhere}.attach-box button{padding:4px 9px;font-size:12px;align-self:flex-start}.attach-help{font-size:12px;color:#52606e;margin:8px 0 0}@media(max-width:750px){.list-workspace{grid-template-columns:minmax(0,1fr) 210px;overflow-x:auto}.list-workspace>iframe{min-width:530px}.attach-area{min-width:210px}}main{max-width:1200px;margin:12px auto;padding:0 12px 24px}
 .panel{background:#fff;border:1px solid #ced6df;border-radius:10px;overflow:visible;display:none}
 .panel.active{display:block}.panel:not(.active){display:block;position:absolute;left:-20000px;top:0;width:1100px;visibility:visible}
@@ -18,21 +18,29 @@ iframe{border:0;width:100%;height:1300px;display:block}
 </style></head><body>
 <header><h1>登記・測量関係資料 作成</h1><p>表紙と成果品目録を一つの画面で作成・確認できます。</p></header>
 <nav aria-label="書類切替">
-<button class="active" data-tab="cover" aria-selected="true">① 表紙</button>
-<button data-tab="list" aria-selected="false">② 成果品目録</button>
-<button data-tab="dividers" aria-selected="false" id="dividerTab">③ 選択した成果品（0）</button>
+<button class="active" data-tab="list" aria-selected="true">① 表紙・成果品目録</button>
+<button data-tab="dividers" aria-selected="false" id="dividerTab">② 選択した成果品（0）</button>
 <button class="output" id="print">表示中の書類をPDF出力</button>
 </nav>
-<p class="note">タブを切り替えても入力内容はそのまま残ります。目録の各行の右側でPDFを選択できます。登録すると自動チェックされ、③では原本の仕切りページの直後にPDFを差し込みます。</p>
+<p class="note">タブを切り替えても入力内容はそのまま残ります。目録の各行の右側でPDFを選択できます。登録すると自動チェックされ、完成PDFでは原本の仕切りページの直後にPDFを差し込みます。</p>
 <main>
-<section id="cover" class="panel active"><iframe id="coverFrame" title="表紙作成" src="../document-cover/"></iframe></section>
-<section id="list" class="panel"><iframe id="listFrame" title="成果品目録作成" src="../deliverables/?version=parent-group-select-3"></iframe></section>
+<section id="cover" class="panel"><iframe id="coverFrame" title="PDF生成用表紙（画面非表示）" src="../document-cover/"></iframe></section>
+<section id="list" class="panel active"><div class="cover-fields"><h2>表紙の入力項目</h2><div class="cover-fields-grid">
+<label>年度<input data-cover-field="year" value="令和8年度" autocomplete="off"></label>
+<label>事業名<input data-cover-field="project" autocomplete="off"></label>
+<label>所在<input data-cover-field="location" autocomplete="off"></label>
+<label>土地家屋調査士<input data-cover-field="surveyor" autocomplete="off"></label>
+</div></div><iframe id="listFrame" title="成果品目録作成" src="../deliverables/?version=parent-group-select-3"></iframe></section>
 <section id="dividers" class="panel divider-panel"><div id="dividerPages" aria-live="polite"><p class="divider-empty">目録で項目をチェックしてください。</p></div></section>
 </main>
 <script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <script>
-let current="cover";
+let current="list";
+const coverFrame=document.getElementById("coverFrame");
+function syncCoverFields(){const doc=coverFrame.contentDocument;if(!doc)return;document.querySelectorAll("[data-cover-field]").forEach(input=>{const target=doc.getElementById(input.dataset.coverField);if(target){target.value=input.value;target.dispatchEvent(new Event("input",{bubbles:true}))}})}
+coverFrame.addEventListener("load",syncCoverFields);
+document.querySelectorAll("[data-cover-field]").forEach(input=>input.addEventListener("input",syncCoverFields));
 const listFrame=document.getElementById("listFrame"),pages=document.getElementById("dividerPages");
 const printButton=document.getElementById("print"),tab=document.getElementById("dividerTab");
 let sourcePromise=null,previewUrl=null,serial=0;
@@ -151,7 +159,7 @@ async function makeSelectedPdf(rows){
 async function syncDividers(){
  await attachedReady;
  const rows=selectedRows(),ticket=++serial;
- tab.textContent="③ 選択した成果品（"+rows.length+"）";
+ tab.textContent="② 選択した成果品（"+rows.length+"）";
  
  pages.textContent="表紙・目録と原本の仕切りページを準備中…";
  try{
@@ -182,7 +190,7 @@ document.querySelectorAll("[data-tab]").forEach(btn=>btn.addEventListener("click
 }));
 printButton.addEventListener("click",async()=>{
  if(current!=="dividers"){
-  const frame=document.getElementById(current==="cover"?"coverFrame":"listFrame");
+  const frame=document.getElementById("listFrame");
   frame.contentWindow.focus();frame.contentWindow.print();return;
  }
  const rows=selectedRows();
