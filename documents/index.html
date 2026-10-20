@@ -10,7 +10,7 @@ button{cursor:pointer;border:1px solid #aab8c5;border-radius:7px;background:whit
 button.active{background:#176ba8;color:white;border-color:#176ba8;font-weight:700}
 button.output{margin-left:auto;background:#137650;color:white;border-color:#137650}.cover-fields{padding:20px 16px 14px;background:#fff;border-bottom:0;font-family:"Yu Mincho","Hiragino Mincho ProN","Noto Serif JP",serif}.cover-fields h2{font-size:16px;margin:0 0 12px;font-weight:600;letter-spacing:.08em}.cover-fields-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.cover-fields label{font-size:13px;display:grid;gap:5px}.cover-fields input{font:15px "Yu Mincho","Hiragino Mincho ProN","Noto Serif JP",serif;padding:8px 9px;border:1px solid #b5c1cb;border-radius:5px;width:100%;min-width:0}@media(max-width:760px){.cover-fields-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .merge{max-width:1100px;margin:14px auto;padding:16px;background:white;border:1px solid #ced6df;border-radius:10px}.merge h2{font-size:17px;margin:0 0 8px}.merge p{font-size:13px;color:#55616a}.merge input{max-width:100%}.merge button{background:#176ba8;color:white;margin-left:8px}.merge button:disabled{opacity:.5;cursor:wait}.merge .status{display:block;font-size:13px;margin-top:9px} .divider-empty{padding:25px;text-align:center;color:#666}.panel.divider-panel{background:#e9edf2;border:none}.list-workspace{display:grid;grid-template-columns:minmax(0,1fr) 260px;align-items:start;gap:8px;padding:8px;background:#e9edf2}.list-workspace>iframe{width:100%;height:1200px;background:#fff}.attach-area{position:sticky;top:8px;border:1px solid #dbe2e8;border-radius:8px;font-family:system-ui,"Yu Gothic",sans-serif;background:#fff;padding:14px 18px;border-bottom:1px solid #dbe2e8}.attach-area h2{font-size:16px;margin:0 0 8px}.attach-grid{display:grid;grid-template-columns:1fr;gap:12px}.attach-box{display:flex;flex-direction:column;gap:8px;border:2px dashed #9eafbf;border-radius:8px;padding:12px;min-height:108px}.attach-box.drag{background:#e9f4ff;border-color:#176ba8}.attach-box input{max-width:100%;font-size:13px}.attach-box small{color:#54636e;overflow-wrap:anywhere}.attach-box button{padding:4px 9px;font-size:12px;align-self:flex-start}.attach-help{font-size:12px;color:#52606e;margin:8px 0 0}@media(max-width:750px){.list-workspace{grid-template-columns:minmax(0,1fr) 210px;overflow-x:auto}.list-workspace>iframe{min-width:530px}.attach-area{min-width:210px}}main{max-width:1200px;margin:12px auto;padding:0 12px 24px}
-.case-manager{max-width:1100px;margin:16px auto;background:#fff;border:1px solid #ccd5de;border-radius:10px;padding:16px}
+.workspace-hidden{display:none!important}.case-open{max-width:1100px;margin:8px auto 0;padding:0 16px}.case-open button{background:#176ba8;color:#fff;border-color:#176ba8}.case-manager{max-width:1100px;margin:16px auto;background:#fff;border:1px solid #ccd5de;border-radius:10px;padding:16px}
 .case-manager h2{margin:0 0 12px;font-size:18px}.case-controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:12px 0}
 .case-controls select{font:inherit;min-width:220px;max-width:100%;padding:9px;border-radius:6px;border:1px solid #9eacb7}
 .case-fields{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
@@ -36,6 +36,7 @@ iframe{border:0;width:100%;height:1450px;display:block}
 </div>
 <p class="case-message" id="caseStatus">案件を選択するか、新規案件を作成してください。入力内容はこのブラウザに保存されます。</p>
 </section>
+<div class="case-open"><button id="caseOpen">この案件を開いて目録へ →</button><button id="caseBack" style="display:none">← 案件一覧に戻る</button></div>
 <nav aria-label="書類切替">
 <button class="active" data-tab="list" aria-selected="true">① 表紙・成果品目録</button>
 <button data-tab="dividers" aria-selected="false" id="dividerTab">② 選択した成果品（0）</button>
@@ -54,6 +55,12 @@ iframe{border:0;width:100%;height:1450px;display:block}
 let current="list";
 const CASE_KEY="survey-document-projects-v1",ACTIVE_KEY="survey-document-active-v1";
 let cases=[],activeCaseId=null;
+const manager=document.querySelector(".case-manager"),openArea=document.querySelector(".case-open"),nav=document.querySelector("nav"),note=document.querySelector(".note"),workspace=document.querySelector("main");
+let viewingCase=false;
+function setView(open){viewingCase=open;manager.classList.toggle("workspace-hidden",open);nav.classList.toggle("workspace-hidden",!open);note.classList.toggle("workspace-hidden",!open);workspace.classList.toggle("workspace-hidden",!open);document.getElementById("caseOpen").style.display=open?"none":"";document.getElementById("caseBack").style.display=open?"":"none";window.scrollTo(0,0)}
+document.getElementById("caseOpen").onclick=()=>{if(!selectedCase())return;readCaseFields();setView(true)};
+document.getElementById("caseBack").onclick=()=>setView(false);
+
 try{cases=JSON.parse(localStorage.getItem(CASE_KEY)||"[]");if(!Array.isArray(cases))cases=[]}catch(e){cases=[]}
 const caseFieldIds={year:"caseYear",project:"caseProject",location:"caseLocation",surveyor:"caseSurveyor"};
 const selectedCase=()=>cases.find(p=>p.id===activeCaseId);
@@ -286,5 +293,5 @@ printButton.addEventListener("click",async()=>{
  }catch(e){pages.textContent="PDF出力に失敗しました："+e.message;alert("PDF出力に失敗しました："+e.message)}
  finally{printButton.disabled=false}
 });
-const previous=localStorage.getItem(ACTIVE_KEY);if(cases.length)activateCase(cases.find(x=>x.id===previous)?.id||cases[0].id);else newCase();
+const previous=localStorage.getItem(ACTIVE_KEY);if(cases.length)activateCase(cases.find(x=>x.id===previous)?.id||cases[0].id);else newCase();setView(false);
 </script></body></html>
