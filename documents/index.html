@@ -23,7 +23,7 @@ iframe{border:0;width:100%;height:1200px;display:block}
 <button data-tab="dividers" aria-selected="false" id="dividerTab">③ 選択した成果品（0）</button>
 <button class="output" id="print">表示中の書類をPDF出力</button>
 </nav>
-<p class="note">タブを切り替えても入力内容はそのまま残ります。目録にチェックすると、③に対応する仕切りページが自動追加されます。成果品本体の挿入は今後対応します。</p>
+<p class="note">タブを切り替えても入力内容はそのまま残ります。目録のチェックに合わせ、原本PDFから該当する仕切りページをそのまま取り出します。成果品本体の挿入は今後対応します。</p>
 <main>
 <section id="cover" class="panel active"><iframe id="coverFrame" title="表紙作成" src="../document-cover/"></iframe></section>
 <section id="list" class="panel"><iframe id="listFrame" title="成果品目録作成" src="../deliverables/"></iframe></section>
@@ -33,17 +33,50 @@ iframe{border:0;width:100%;height:1200px;display:block}
 <script>
 let current="cover";
 const listFrame=document.getElementById("listFrame"),pages=document.getElementById("dividerPages");
-function syncDividers(){
+const printButton=document.getElementById("print"),tab=document.getElementById("dividerTab");
+let sourcePromise=null,previewUrl=null,serial=0;
+function selectedRows(){
  const doc=listFrame.contentDocument;
- if(!doc||!listFrame.contentWindow?.getDeliverableItems)return;
- const items=listFrame.contentWindow.getDeliverableItems();
- const selected=[...doc.querySelectorAll('input[type="checkbox"][data-row]:checked')].map(el=>Number(el.dataset.row));
- document.getElementById("dividerTab").textContent="③ 選択した成果品（"+selected.length+"）";
- pages.replaceChildren();
- if(!selected.length){const p=document.createElement("p");p.className="divider-empty";p.textContent="目録で項目をチェックしてください。";pages.append(p);return}
- selected.forEach(i=>{const [num,label]=items[i];const page=document.createElement("article");page.className="divider-sheet";
- const title=document.createElement("div");title.className="divider-title";title.textContent=(num?num+"　":"")+label.split(String.fromCharCode(10))[0].replace(/　/g," ").trim();
- page.append(title);pages.append(page)});
+ if(!doc)return [];
+ return [...doc.querySelectorAll('input[type="checkbox"][data-row]:checked')].map(e=>Number(e.dataset.row));
+}
+async function sourcePdf(){
+ if(!sourcePromise)sourcePromise=(async()=>{
+  if(!window.PDFLib)throw Error("PDF処理ライブラリの読込に失敗");
+  const response=await fetch("./assets/original-sample-32pages.pdf");
+  if(!response.ok)throw Error("原本PDFが見つかりません（HTTP "+response.status+"）");
+  const original=await PDFLib.PDFDocument.load(await response.arrayBuffer());
+  if(original.getPageCount()!==32)throw Error("原本のページ数が正しくありません");
+  return original;
+ })().catch(e=>{sourcePromise=null;throw e});
+ return sourcePromise;
+}
+async function makeSelectedPdf(rows){
+ const src=await sourcePdf(),out=await PDFLib.PDFDocument.create();
+ const copied=await out.copyPages(src,rows.map(i=>i+2));
+ copied.forEach(p=>out.addPage(p));
+ return new Blob([await out.save()],{type:"application/pdf"});
+}
+async function syncDividers(){
+ const rows=selectedRows(),ticket=++serial;
+ tab.textContent="③ 選択した成果品（"+rows.length+"）";
+ if(!rows.length){pages.textContent="目録で項目をチェックしてください。";if(previewUrl){URL.revokeObjectURL(previewUrl);previewUrl=null}return}
+ pages.textContent="原本PDFから仕切りページを準備中…";
+ try{
+  const pdf=await makeSelectedPdf(rows);
+  if(ticket!==serial)return;
+  const url=URL.createObjectURL(pdf);
+  if(previewUrl)URL.revokeObjectURL(previewUrl);
+  previewUrl=url;
+  pages.replaceChildren();
+  const viewer=document.createElement("iframe");
+  viewer.title="選択した仕切りページ（原本PDF）";
+  viewer.src=url+"#toolbar=1";
+  viewer.style.width="100%";
+  viewer.style.height="78vh";
+  viewer.style.minHeight="600px";
+  pages.append(viewer);
+ }catch(e){if(ticket===serial)pages.textContent="原本PDFを表示できません："+e.message}
 }
 listFrame.addEventListener("load",()=>{
  listFrame.contentDocument?.addEventListener("change",syncDividers);
@@ -55,36 +88,19 @@ document.querySelectorAll("[data-tab]").forEach(btn=>btn.addEventListener("click
  document.querySelectorAll(".panel").forEach(p=>p.classList.toggle("active",p.id===current));
  if(current==="dividers")syncDividers();
 }));
-async function downloadDividerPdf(){
- syncDividers();
- const selected=[...listFrame.contentDocument.querySelectorAll('input[type="checkbox"][data-row]:checked')].map(el=>Number(el.dataset.row));
- if(!selected.length){alert("まず成果品目録で項目にチェックを入れてください。");return}
- if(!window.PDFLib){alert("PDFライブラリを読み込めません。インターネット接続を確認してください。");return}
- const items=listFrame.contentWindow.getDeliverableItems();
- const pdf=await PDFLib.PDFDocument.create();
- const canvas=document.createElement("canvas");
- canvas.width=1240;canvas.height=1754;
- const ctx=canvas.getContext("2d");
- for(const i of selected){
-  const [num,label]=items[i];
-  const title=label.split(String.fromCharCode(10))[0].replace(/　/g," ").trim();
-  ctx.fillStyle="#fff";ctx.fillRect(0,0,1240,1754);
-  ctx.fillStyle="#111";ctx.textAlign="center";ctx.textBaseline="middle";
-  ctx.font='bold 39px "Yu Mincho","Hiragino Mincho ProN",serif';
-  const chars=[...title],space=7,width=chars.reduce((total,ch)=>total+ctx.measureText(ch).width,0)+(chars.length-1)*space;
-  let x=(1240-width)/2;const y=830;
-  for(const ch of chars){const w=ctx.measureText(ch).width;ctx.fillText(ch,x+w/2,y);x+=w+space}
-  const img=await pdf.embedPng(canvas.toDataURL("image/png"));
-  const page=pdf.addPage([595.28,841.89]);page.drawImage(img,{x:0,y:0,width:595.28,height:841.89});
+printButton.addEventListener("click",async()=>{
+ if(current!=="dividers"){
+  const frame=document.getElementById(current==="cover"?"coverFrame":"listFrame");
+  frame.contentWindow.focus();frame.contentWindow.print();return;
  }
- const bytes=await pdf.save(),url=URL.createObjectURL(new Blob([bytes],{type:"application/pdf"}));
- const a=document.createElement("a");a.href=url;a.download="成果品_仕切り_"+selected.length+"枚.pdf";document.body.append(a);a.click();a.remove();
- setTimeout(()=>URL.revokeObjectURL(url),60000);
-}
-document.getElementById("print").addEventListener("click",async()=>{
- if(current==="dividers"){try{await downloadDividerPdf()}catch(e){alert("PDF作成エラー："+e.message)}return}
- const frame=document.getElementById(current==="cover"?"coverFrame":"listFrame");
- frame.contentWindow.focus();frame.contentWindow.print();
+ const rows=selectedRows();
+ if(!rows.length){alert("先に目録で項目をチェックしてください。");return}
+ printButton.disabled=true;
+ try{
+  const pdf=await makeSelectedPdf(rows),url=URL.createObjectURL(pdf);
+  const a=document.createElement("a");a.href=url;a.download="成果品_原本仕切り_"+rows.length+"枚.pdf";
+  document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);
+ }catch(e){alert("PDF出力に失敗しました："+e.message)}
+ finally{printButton.disabled=false}
 });
-
 </script></body></html>
