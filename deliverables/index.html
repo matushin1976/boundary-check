@@ -13,15 +13,15 @@ table{border-collapse:collapse;width:100%;table-layout:fixed;border:1.5px solid 
 td{border:1px solid #111;padding:0;height:7.2mm}td.number{width:12%;text-align:center;vertical-align:top;padding-top:2mm;font-size:10pt}
 td.check{width:12%;text-align:center}td.item{width:76%;padding-left:3mm;white-space:nowrap;font-size:10.3pt;letter-spacing:.08em}
 td.item.top{font-weight:600;letter-spacing:.15em}td.item.sub{padding-left:10mm;letter-spacing:normal;font-weight:400}
-td.upload-cell{width:205px;min-width:205px;padding:2px 6px;font:12px system-ui,sans-serif;letter-spacing:0;text-align:left;vertical-align:middle;background:#f7fafc}td.upload-cell input{width:100%;max-width:195px;font-size:11px}td.upload-cell .file-state{display:block;font-size:11px;color:#3f5865;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}td.upload-cell button{padding:1px 5px;font-size:10px;margin:0}td.item.note{white-space:normal;font-size:9pt;line-height:1.1;letter-spacing:normal}
+td.upload-cell{width:24%;min-width:0;padding:2px 6px;font:12px system-ui,sans-serif;letter-spacing:0;text-align:left;vertical-align:middle;background:#f7fafc}td.upload-cell input{width:100%;max-width:100%;font-size:11px}td.upload-cell .file-state{display:block;font-size:11px;color:#3f5865;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}td.upload-cell button{padding:1px 5px;font-size:10px;margin:0}td.item.note{white-space:normal;font-size:9pt;line-height:1.1;letter-spacing:normal}
 .check label{display:flex;align-items:center;justify-content:center;min-height:6.6mm;cursor:pointer;position:relative}
 .check input{width:17px;height:17px;margin:0;accent-color:#1769a9}
 .mark{display:none;font-family:serif;font-weight:400;font-size:14pt;line-height:1}
 .copy-count{background:#fff4a3!important;width:2.6em;font:inherit;text-align:center;border:0;border-bottom:1px solid #888;border-radius:0;padding:0 2px;color:inherit}.copy-count:focus{outline:2px solid #1769a9;outline-offset:1px}.status{font-family:system-ui,sans-serif;font-size:13px}
-@media screen{.sheet{width:1050px;margin-left:10px;margin-right:10px}.sheet table{width:100%}td.item{width:auto}td.number,td.check{width:9%}}@page{size:A4 portrait;margin:0}
+@media screen{.sheet{width:100%;max-width:1050px;margin:10px auto;padding:13mm 8mm 11mm 12mm}.sheet table{width:100%;table-layout:fixed}td.item{width:60%;font-size:9.3pt;letter-spacing:normal;white-space:normal}td.item.sub{padding-left:5mm}td.number,td.check{width:8%}td.upload-cell{width:24%}}@page{size:A4 portrait;margin:0}
 @media print{td.upload-cell{display:none!important}.copy-count{background:transparent!important;border:0;width:1.8em;text-align:center;outline:none}body{background:white}.controls{display:none}.sheet{margin:0;box-shadow:none;min-height:297mm;padding:13mm 12mm 11mm 22mm;break-after:avoid}
 .check input{display:none}.check input:checked + .mark{display:inline}.sheet h2{margin-bottom:6mm}}
-@media screen and (max-width:850px){.sheet{transform-origin:top left;zoom:calc(100vw / 850);margin:12px 0}.controls{position:relative;z-index:1}}
+@media screen and (max-width:850px){.sheet{margin:10px auto}.controls{position:relative;z-index:1}}
 </style></head><body>
 <div class="controls"><h1>成果品目録（チェック〇付きPDF）</h1>
 <p>対象項目をチェック → 「PDF作成」 → 印刷画面で「PDFに保存」を選択。<strong>14 相続関係の末尾まで全30項目対応。</strong></p>
