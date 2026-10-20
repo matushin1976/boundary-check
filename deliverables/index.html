@@ -14,8 +14,6 @@ td{border:1px solid #111;padding:0;height:7.2mm}td.number{width:12%;text-align:c
 td.check{width:12%;text-align:center}td.item{width:76%;padding-left:3mm;white-space:nowrap;font-size:10.3pt;letter-spacing:.08em}
 td.item.top{font-weight:600;letter-spacing:.15em}td.item.sub{padding-left:10mm;letter-spacing:normal;font-weight:400}
 td.item.note{white-space:normal;font-size:9pt;line-height:1.1;letter-spacing:normal}
-.group-start td.number{border-bottom:0}.subrow td.number{border-top:0;border-bottom:0}
-.group-end td.number{border-top:0}
 .check label{display:flex;align-items:center;justify-content:center;min-height:6.6mm;cursor:pointer;position:relative}
 .check input{width:17px;height:17px;margin:0;accent-color:#1769a9}
 .mark{display:none;font-family:serif;font-weight:400;font-size:14pt;line-height:1}
@@ -59,7 +57,7 @@ items.forEach(([num,name],i)=>{
  if(num&&next&&!next[0])tr.className="group-start";
  else if(!num&&prev&&!prev[0]&&next&&!next[0])tr.className="subrow";
  else if(!num&&next&&next[0])tr.className="group-end";
- const n=document.createElement("td");n.className="number";n.textContent=num;
+ let n=null; if(num){n=document.createElement("td");n.className="number";n.textContent=num;let span=1;while(items[i+span]&&!items[i+span][0])span++;n.rowSpan=span;}
  const c=document.createElement("td");c.className="check";const label=document.createElement("label");label.setAttribute("aria-label",(num||name.replace(/\s/g,""))+" を選択");
  const input=document.createElement("input");input.type="checkbox";input.dataset.row=i;const mark=document.createElement("span");mark.className="mark";mark.textContent="〇";label.append(input,mark);c.append(label);
  const item=document.createElement("td");item.className="item "+(num?"top":"sub")+(name.includes("\n")?" note":"");
@@ -67,7 +65,7 @@ items.forEach(([num,name],i)=>{
  const count=document.createElement("input");count.className="copy-count";count.type="text";count.inputMode="numeric";count.maxLength=2;count.pattern="[0-9]{0,2}";count.setAttribute("aria-label","境界確定協議書の通数（2桁まで）");count.addEventListener("input",()=>{count.value=count.value.replace(/[^0-9]/g,"").slice(0,2)});
  item.append(document.createTextNode("②　境界確定協議書（"),count,document.createTextNode("通）"));
 } else name.split("\n").forEach((part,j)=>{if(j)item.append(document.createElement("br"));item.append(document.createTextNode(part))});
- tr.append(n,c,item);tbody.append(tr);
+ if(n)tr.append(n);tr.append(c,item);tbody.append(tr);
 });
 const inputs=[...document.querySelectorAll(".check input")];
 function status(){document.getElementById("status").textContent="選択 "+inputs.filter(x=>x.checked).length+" / "+inputs.length}
