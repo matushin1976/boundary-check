@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>登記・測量関係資料 表紙作成</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#edf0f4;font-family:"Yu Mincho","Hiragino Mincho ProN","Noto Serif JP",serif;color:#111}
+.control{font-family:system-ui,"Yu Gothic",sans-serif;padding:16px max(15px,calc((100vw - 850px)/2));background:white;border-bottom:1px solid #ddd}
+.control h1{font-size:20px;margin:0 0 9px}.control p{font-size:13px;margin:6px 0}
+.form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:14px 0}
+.form label{font-size:13px;display:flex;flex-direction:column;gap:4px}.form input{font:inherit;font-size:16px;padding:10px;border:1px solid #aaa;border-radius:5px;width:100%}
+button{border:0;border-radius:6px;background:#176ba8;color:white;font-size:16px;padding:11px 17px;cursor:pointer}
+.paper{position:relative;background:#fff;width:210mm;height:297mm;margin:20px auto;box-shadow:0 4px 18px #bbb;overflow:hidden}
+.frame{position:absolute;inset:11mm 11mm 10mm 11mm;border:0.35mm solid #333}
+.heading{position:absolute;top:15.5%;left:0;width:100%;text-align:center;font-size:20pt;letter-spacing:.24em;font-weight:bold}
+.content{position:absolute;top:34%;left:29%;right:15%;font-size:15pt;line-height:2.05}
+.year{margin-left:19%;white-space:nowrap}.entry{display:grid;grid-template-columns:4.7em 1fr;column-gap:1.8em;white-space:nowrap}.entry .value{min-width:0;white-space:normal;overflow-wrap:anywhere;line-height:1.35;align-self:center}
+.footer{position:absolute;top:79%;left:18%;right:12%;text-align:center;font-size:12.2pt;white-space:nowrap}
+.person{position:absolute;top:83.6%;left:26%;right:13%;display:flex;gap:1em;align-items:baseline;font-size:12.5pt;white-space:nowrap}
+.person .name{font-size:15pt;letter-spacing:.1em;white-space:normal;overflow-wrap:anywhere}
+@page{size:A4 portrait;margin:0}
+@media print{body{background:white}.control{display:none!important}.paper{margin:0;box-shadow:none;width:210mm;height:297mm;break-inside:avoid}}
+@media screen and (max-width:850px){.paper{zoom:calc(100vw / 850);margin:12px 0}}
+</style></head><body>
+<section class="control"><h1>登記・測量関係資料 表紙作成</h1>
+<p>年度・事業名・所在・土地家屋調査士を入力。A4縦の表紙をそのままPDF保存できるで。</p>
+<div class="form">
+<label>年度（数字4桁）<input id="year" inputmode="numeric" maxlength="4" placeholder="例：令和8年度" value="令和8年度"></label>
+<label>事業名<input id="project" placeholder="事業名"></label>
+<label>所在<input id="location" placeholder="土地の所在"></label>
+<label>土地家屋調査士<input id="surveyor" placeholder="氏名"></label>
+</div><button id="print">PDF出力（印刷画面）</button><p>データは外部送信せず、この画面だけで処理。印刷画面ではA4・余白なし・倍率100%を指定して「PDFに保存」。</p>
+</section>
+<main class="paper"><div class="frame"></div>
+<div class="heading">登 記・測 量 関 係 資 料</div>
+<div class="content"><div class="year" id="outYear"></div>
+<div class="entry"><span>事業名</span><span class="value" id="outProject"></span></div>
+<div class="entry"><span>所　　在</span><span class="value" id="outLocation"></span></div>
+</div>
+<div class="footer">公益社団法人 宮崎県公共嘱託登記土地家屋調査士協会</div>
+<div class="person"><span>社　員</span><span>土地家屋調査士</span><span class="name" id="outSurveyor"></span></div>
+</main>
+<script>
+const pairs=[["year","outYear"],["project","outProject"],["location","outLocation"],["surveyor","outSurveyor"]];
+pairs.forEach(([a,b])=>{const input=document.getElementById(a),output=document.getElementById(b);function update(){output.textContent=input.value}input.addEventListener("input",update);update()});
+document.getElementById("print").onclick=()=>window.print();
+</script></body></html>
