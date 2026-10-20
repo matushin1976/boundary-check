@@ -62,7 +62,15 @@ items.forEach(([num,name],i)=>{
  const c=document.createElement("td");c.className="check";const label=document.createElement("label");label.setAttribute("aria-label",(num||name.replace(/\s/g,""))+" を選択");
  const input=document.createElement("input");input.type="checkbox";input.dataset.row=i;const mark=document.createElement("span");mark.className="mark";mark.textContent="〇";label.append(input,mark);c.append(label);
  const item=document.createElement("td");item.className="item "+(num?"top":"sub")+(name.includes("\n")?" note":"");
- if(name==="②　境界確定協議書（　通）"){
+ if(name==="①　立会証明書（官 通、民 通）"){
+ const countInput=(who)=>{
+  const x=document.createElement("input");x.className="copy-count";x.type="text";x.inputMode="numeric";x.maxLength=2;x.pattern="[0-9]{0,2}";
+  x.setAttribute("aria-label","立会証明書（"+who+"）の通数（2桁まで）");
+  x.addEventListener("input",()=>{x.value=x.value.replace(/[^0-9]/g,"").slice(0,2)});
+  return x;
+ };
+ item.append(document.createTextNode("①　立会証明書（官 "),countInput("官"),document.createTextNode("通、民 "),countInput("民"),document.createTextNode("通）"));
+} else if(name==="②　境界確定協議書（　通）"){
  const count=document.createElement("input");count.className="copy-count";count.type="text";count.inputMode="numeric";count.maxLength=2;count.pattern="[0-9]{0,2}";count.setAttribute("aria-label","境界確定協議書の通数（2桁まで）");count.addEventListener("input",()=>{count.value=count.value.replace(/[^0-9]/g,"").slice(0,2)});
  item.append(document.createTextNode("②　境界確定協議書（"),count,document.createTextNode("通）"));
 } else name.split("\n").forEach((part,j)=>{if(j)item.append(document.createElement("br"));item.append(document.createTextNode(part))});
