@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>成果品目録・〇付けPDF作成</title>
+<style>
+*{box-sizing:border-box}body{margin:0;color:#222;background:#f2f4f7;font-family:"Yu Mincho","Hiragino Mincho ProN","Noto Serif JP",serif}
+.controls{font-family:system-ui,"Yu Gothic",sans-serif;background:#fff;padding:15px max(12px,calc((100vw - 880px)/2));border-bottom:1px solid #ddd}
+h1{font-size:1.25rem;margin:0 0 10px}.controls p{font-size:13px;margin:5px 0 10px}
+button{font:inherit;cursor:pointer;border:1px solid #bbb;padding:9px 13px;border-radius:7px;background:white;margin:4px 6px 4px 0}
+button.primary{background:#1769a9;color:white;border-color:#1769a9}
+.sheet{width:210mm;min-height:297mm;background:white;margin:20px auto;padding:27mm 24mm 24mm;box-shadow:0 3px 16px #bbb}
+.sheet h2{text-align:center;font-size:19pt;letter-spacing:.34em;margin:0 0 6mm}
+table{border-collapse:collapse;width:100%;table-layout:fixed;border:1.5px solid #111;font-size:10.5pt}
+td{border:1px solid #111;padding:0;height:7.8mm}td.number{width:12%;text-align:center;font-size:10pt}
+td.check{width:12%;text-align:center}td.item{width:76%;padding-left:3mm;white-space:nowrap;font-size:10.3pt;letter-spacing:.08em}
+td.item.top{font-weight:600;letter-spacing:.15em}td.item.sub{padding-left:10mm;letter-spacing:normal;font-weight:400}
+td.item.note{white-space:normal;font-size:9pt;line-height:1.1;letter-spacing:normal}
+.group-start td.number{border-bottom:0}.subrow td.number{border-top:0;border-bottom:0}
+.group-end td.number{border-top:0}
+.check label{display:flex;align-items:center;justify-content:center;min-height:7mm;cursor:pointer;position:relative}
+.check input{width:17px;height:17px;margin:0;accent-color:#1769a9}
+.mark{display:none;font-family:serif;font-weight:400;font-size:14pt;line-height:1}
+.status{font-family:system-ui,sans-serif;font-size:13px}
+@page{size:A4 portrait;margin:0}
+@media print{body{background:white}.controls{display:none}.sheet{margin:0;box-shadow:none;min-height:297mm;padding:27mm 24mm 24mm;break-after:avoid}
+.check input{display:none}.check input:checked + .mark{display:inline}.sheet h2{margin-bottom:6mm}}
+@media screen and (max-width:850px){.sheet{transform-origin:top left;zoom:calc(100vw / 850);margin:12px 0}.controls{position:relative;z-index:1}}
+</style></head><body>
+<div class="controls"><h1>成果品目録（チェック〇付きPDF）</h1>
+<p>対象項目をチェック → 「PDF作成」 → 印刷画面で「PDFに保存」を選択。<strong>14 相続関係の末尾まで全30項目対応。</strong></p>
+<button class="primary" id="print">PDF作成・印刷</button><button id="all">すべて選択</button><button id="none">すべて解除</button>
+<span class="status" id="status">選択 0 / 30</span><p>入力情報は端末内だけで処理します。印刷時、チェックした行だけ〇が入ります。</p></div>
+<section class="sheet"><h2>成 果 品 目 録</h2><table><tbody id="rows"></tbody></table></section>
+<script>
+"use strict";
+const items=[
+["1","位　置　図　・　案　内　図"],
+["2","公　図　写　し"],
+["3","土　地　閲　覧　調　書"],
+["4","法務局備付地積測量図等写し"],
+["5","登　記　基　準　点　測　量"],
+["","①　基準点網図"],["","②　観測手簿"],["","③　計算簿"],["","④　精度管理表"],["","⑤　成果表"],
+["6","復　元　測　量"],
+["7","境　界　測　量"],
+["","①　計算簿"],["","②　精度管理表"],["","③　座標一覧"],
+["8","境　界　立　会　確　認"],
+["","①　立会証明書（官、道、民、道）"],["","②　境界確定協議書（　道）"],
+["9","用　地　実　測　図"],
+["10","登　記　嘱　託　業　務"],
+["","①　登記完了証・登記嘱託書の写し"],["","②　地積測量図"],["","③　公図写（登記後）"],["","④　全部事項証明書（登記後）"],
+["11","不　動　産　調　査　報　告　書"],
+["12","地　積　測　量　図\n（登記嘱託業務が無い業務）"],
+["13","境界点・多角点・引照点写真\n（不動産調査報告書添付がある際は第11章参照）"],
+["14","相　続　関　係"],
+["","①　相続関係説明図"],["","②　相続を証する書面"]
+];
+const tbody=document.getElementById("rows");
+items.forEach(([num,name],i)=>{
+ const tr=document.createElement("tr");const next=items[i+1];const prev=items[i-1];
+ if(num&&next&&!next[0])tr.className="group-start";
+ else if(!num&&prev&&!prev[0]&&next&&!next[0])tr.className="subrow";
+ else if(!num&&next&&next[0])tr.className="group-end";
+ const n=document.createElement("td");n.className="number";n.textContent=num;
+ const c=document.createElement("td");c.className="check";const label=document.createElement("label");label.setAttribute("aria-label",(num||name.replace(/\s/g,""))+" を選択");
+ const input=document.createElement("input");input.type="checkbox";input.dataset.row=i;const mark=document.createElement("span");mark.className="mark";mark.textContent="〇";label.append(input,mark);c.append(label);
+ const item=document.createElement("td");item.className="item "+(num?"top":"sub")+(name.includes("\n")?" note":"");
+ name.split("\n").forEach((part,j)=>{if(j)item.append(document.createElement("br"));item.append(document.createTextNode(part))});
+ tr.append(n,c,item);tbody.append(tr);
+});
+const inputs=[...document.querySelectorAll(".check input")];
+function status(){document.getElementById("status").textContent="選択 "+inputs.filter(x=>x.checked).length+" / "+inputs.length}
+inputs.forEach(x=>x.addEventListener("change",status));
+document.getElementById("all").onclick=()=>{inputs.forEach(x=>x.checked=true);status()};
+document.getElementById("none").onclick=()=>{inputs.forEach(x=>x.checked=false);status()};
+document.getElementById("print").onclick=()=>window.print();
+</script></body></html>
