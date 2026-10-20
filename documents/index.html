@@ -48,10 +48,10 @@ extractBtn.addEventListener("click",async()=>{
  try{
   if(!window.PDFLib)throw Error("PDF作成ライブラリを読み込めません。通信状態を確認してください");
   const listDoc=document.getElementById("listFrame").contentDocument;
-  if(!listDoc||!listDoc.defaultView||!listDoc.defaultView.items)throw Error("目録が読み込まれていません");
+  if(!listDoc||!listDoc.defaultView||!listDoc.defaultView.getDeliverableItems)throw Error("目録が読み込まれていません");
   const chosen=[...listDoc.querySelectorAll('input[type="checkbox"][data-row]:checked')].map(x=>Number(x.dataset.row));
   if(!chosen.length)throw Error("先に目録で項目をチェックしてください");
-  const items=listDoc.defaultView.items;
+  const items=listDoc.defaultView.getDeliverableItems();
   const out=await PDFLib.PDFDocument.create();
   const W=1240,H=1754;
   const canvas=document.createElement("canvas");canvas.width=W;canvas.height=H;
