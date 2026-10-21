@@ -86,7 +86,7 @@ document.addEventListener("keydown",e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLower
 if(integrated){
  syncFromShared();
  if(el("home"))el("home").remove();if(el("back"))el("back").remove();
- const fieldsPanel=document.querySelector(".project-fields");if(fieldsPanel)fieldsPanel.style.display="none";
+ const fieldsPanel=document.querySelector(".project-fields");if(fieldsPanel){for(const id of ["job_name","location","surveyor"]){const field=el(id);field.readOnly=true;field.title="案件画面の共通情報から自動入力されます";}}
  const p=db.find(p=>p.id===selectedId);
  if(p)openProject(p.id);
  else{el("editor").hidden=false;el("sections").textContent="案件が見つかりません。統合画面から新規案件を作成してください。";}
