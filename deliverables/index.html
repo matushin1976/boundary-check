@@ -34,8 +34,8 @@ if(new URLSearchParams(location.search).get("integrated")==="1")document.body.cl
 const items=[
 ["1","位　置　図　・　案　内　図"],
 ["2","公　図　写　し"],
-["3","土　地　閲　覧　調　書"],
-["4","法務局備付地積測量図等写し"],
+["3","法務局備付地積測量図等写し"],
+["4","土　地　閲　覧　調　書"],
 ["5","登　記　基　準　点　測　量"],
 ["","①　基準点網図"],["","②　観測手簿"],["","③　計算簿"],["","④　精度管理表"],["","⑤　成果表"],
 ["6","復　元　測　量"],
@@ -79,7 +79,7 @@ items.forEach(([num,name],i)=>{
  const fileInput=document.createElement("input");fileInput.type="file";fileInput.accept=".pdf,application/pdf";fileInput.dataset.attach=i;fileInput.setAttribute("aria-label",name.replace(/\\s/g,"")+"のPDFファイル選択");
  const state=document.createElement("span");state.className="file-state";state.dataset.fileState=i;state.textContent="未登録";
  const clear=document.createElement("button");clear.type="button";clear.dataset.remove=i;clear.textContent="解除";clear.hidden=true;
- if(i===2){const link=document.createElement("a");link.href="../land-inspection/";link.target="_blank";link.rel="noopener noreferrer";link.textContent="土地閲覧調書を作成 →";link.setAttribute("aria-label","土地閲覧調書の作成画面を開く");upload.append(link);}else if(["5","7","8","10","14"].includes(num)){upload.classList.add("group-upload");upload.textContent="子項目にPDFを登録";}else{upload.append(fileInput,state,clear);}
+ if(i===3){const link=document.createElement("a");link.href="../land-inspection/";link.target="_blank";link.rel="noopener noreferrer";link.textContent="土地閲覧調書を作成 →";link.setAttribute("aria-label","土地閲覧調書の作成画面を開く");upload.append(link);}else if(["5","7","8","10","14"].includes(num)){upload.classList.add("group-upload");upload.textContent="子項目にPDFを登録";}else{upload.append(fileInput,state,clear);}
  if(n)tr.append(n);tr.append(c,item,upload);tbody.append(tr);
 });
 const inputs=[...document.querySelectorAll(".check input")];
