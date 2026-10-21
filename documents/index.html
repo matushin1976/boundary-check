@@ -258,7 +258,7 @@ async function makeSelectedPdf(rows){
  await attachedReady;
  for(const idx of rows){
   const [divider]=await out.copyPages(src,[idx+2]);out.addPage(divider);
-  if(idx===2){await insertLandInspection(out);continue;}
+  if(idx===3){await insertLandInspection(out);continue;}
   const item=attached.get(idx);
   if(item){
    const pdf=await PDFLib.PDFDocument.load(item.bytes);
