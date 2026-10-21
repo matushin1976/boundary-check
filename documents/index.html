@@ -193,8 +193,35 @@ async function insertGeneratedPage(out,frameId,elementSelector,isList){
   onclone:clonedDoc=>{
    const style=clonedDoc.createElement("style");
    if(isList)clonedDoc.body.classList.remove("integrated");
-   style.textContent=".paper,.sheet{box-shadow:none!important;margin:0!important;transform:none!important;zoom:1!important;width:210mm!important;height:297mm!important;min-height:297mm!important}"+
-     (isList?".sheet{padding:13mm 12mm 11mm 22mm!important}.sheet h2{font-size:19pt!important;letter-spacing:.34em!important;margin:0 0 6mm!important;padding:0!important}table{border:1.5px solid #111!important;width:100%!important;table-layout:fixed!important}td{border:1px solid #111!important;height:7.2mm!important;padding:0!important}td.number{width:12%!important;text-align:center!important;vertical-align:top!important;padding-top:2mm!important;font-size:10pt!important}td.check{width:12%!important}td.item{width:76%!important;padding-left:3mm!important;white-space:nowrap!important;font-size:10.3pt!important;letter-spacing:.08em!important}td.item.sub{padding-left:10mm!important;letter-spacing:normal!important;font-weight:400!important}td.upload-cell{display:none!important}.check input[type=checkbox]{display:none!important}.check input[type=checkbox]:checked + .mark{display:inline!important}.copy-count{border:0!important;background:transparent!important;outline:0!important;width:1.8em!important}":"");
+   // PDF専用の固定書式。画面用 .integrated と @media screen の指定を一切引き継がない。
+   style.textContent=isList?`
+     html,body{background:#fff!important;margin:0!important;padding:0!important}
+     .sheet{box-sizing:border-box!important;width:210mm!important;max-width:210mm!important;min-width:210mm!important;
+       height:297mm!important;min-height:297mm!important;margin:0!important;padding:13mm 12mm 11mm 22mm!important;
+       background:#fff!important;box-shadow:none!important;overflow:hidden!important;font-family:"Yu Mincho","Hiragino Mincho ProN","Noto Serif JP",serif!important}
+     .sheet h2{font-family:inherit!important;text-align:center!important;font-size:19pt!important;
+       letter-spacing:.34em!important;line-height:normal!important;margin:0 0 6mm!important;padding:0!important}
+     .sheet table{border-collapse:collapse!important;width:100%!important;table-layout:fixed!important;
+       border:1.5px solid #111!important;font-size:10.5pt!important}
+     .sheet tr{break-inside:avoid!important}
+     .sheet td{box-sizing:border-box!important;border:1px solid #111!important;
+       padding:0!important;height:7.2mm!important;min-height:7.2mm!important;background:#fff!important}
+     .sheet td.number{width:12%!important;text-align:center!important;vertical-align:top!important;
+       padding-top:2mm!important;font-size:10pt!important}
+     .sheet td.check{width:12%!important;text-align:center!important}
+     .sheet td.item{width:76%!important;padding-left:3mm!important;white-space:nowrap!important;
+       font-size:10.3pt!important;letter-spacing:.08em!important;font-weight:600!important}
+     .sheet td.item.sub{padding-left:10mm!important;letter-spacing:normal!important;font-weight:400!important}
+     .sheet td.item.note{white-space:normal!important;font-size:9pt!important;line-height:1.1!important}
+     .sheet td.upload-cell{display:none!important}
+     .sheet .check label{display:flex!important;align-items:center!important;justify-content:center!important;min-height:6.6mm!important}
+     .sheet .check input{display:none!important}
+     .sheet .check .mark{display:none!important;font:14pt serif!important}
+     .sheet .check input:checked + .mark{display:inline!important}
+     .sheet .copy-count{border:0!important;border-radius:0!important;background:transparent!important;
+       font:inherit!important;outline:0!important;text-align:center!important;width:1.8em!important;padding:0!important}
+   `:`.paper{box-shadow:none!important;margin:0!important;transform:none!important;zoom:1!important;
+       width:210mm!important;height:297mm!important;min-height:297mm!important}`;
    clonedDoc.head.append(style);
   }
  });
