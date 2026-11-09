@@ -141,7 +141,9 @@ function autoCheck(idx){
 async function registerPdf(idx,file){
  if(!file)return;
  if(!(file.name.toLowerCase().endsWith(".pdf")||file.type==="application/pdf"))throw Error("PDFを指定してください");
- const bytes=await file.arrayBuffer(),pdf=await PDFLib.PDFDocument.load(bytes);
+ // Files selected inside the iframe return an ArrayBuffer from its realm.
+ // Normalize in this window before pdf-lib performs instanceof checks.
+ const bytes=new Uint8Array(await file.arrayBuffer()),pdf=await PDFLib.PDFDocument.load(bytes);
  if(!pdf.getPageCount())throw Error("ページのないPDFです");
  const data={name:file.name,bytes};
  await dbAction("put",String(idx),data);
@@ -261,7 +263,7 @@ async function makeSelectedPdf(rows){
   if(idx===3){await insertLandInspection(out);continue;}
   const item=attached.get(idx);
   if(item){
-   const pdf=await PDFLib.PDFDocument.load(item.bytes);
+   const pdf=await PDFLib.PDFDocument.load(new Uint8Array(item.bytes));
    const pages=await out.copyPages(pdf,pdf.getPageIndices());
    pages.forEach(page=>out.addPage(page));
   }
